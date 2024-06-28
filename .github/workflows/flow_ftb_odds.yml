@@ -54,7 +54,7 @@ jobs:
           git add data/ftb/*
           git add log/*
           git commit -am "GH ACTION Headlines $(date)"
-          git pull origin main
+          git pull --rebase
           git push origin main
         env:
           REPO_KEY: ${{secrets.GITHUB_TOKEN}}
