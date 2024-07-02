@@ -450,7 +450,8 @@ if(ARG_TYPE == 'schedule'){
   
   if(IF_update){
     TAB_archiwum = fsubset(TAB_archiwum, id_season %in% c(1)) %>%
-      fmutate(url = paste0(liga, '/', 'wyniki/')) 
+      fmutate(url = paste0(liga, '/', 'wyniki/')) %>%
+      fsubset(!is.na(kraj))
   }else{
     TAB_archiwum = TAB_archiwum %>%  
       fmutate(
@@ -557,6 +558,22 @@ if(ARG_TYPE == 'schedule'){
  
 }
 
-
+if(F){
+  library(readr) ; library(purrr)
+  fls = 'log/log_ftb_schedule.txt'
+  fls = 'log/log_ftb_history_update.txt'
+  fls = 'log/log_ftb_odds.txt'
+  
+  df_log = read_lines(fls) %>% 
+    keep(grepl('tb_0', .)) %>%
+    as.data.frame() %>%
+    setnames('path') %>%
+    tidyr::separate(col = path, into = c('date', 'www', 'info'), sep = '\\|') %>%
+    fmutate(n = parse_number(info)) %>%
+    group_by(www) %>% tally %>% arrange(desc(n))
+   
+  arch_ = readxl::read_xlsx(str_glue('data/mecze_aktualne.xlsm'), sheet = 'TAB_aktualne') 
+   
+}
 
 
