@@ -1403,3 +1403,6 @@
 2024-07-03|https://www.flashscore.pl/pilka-nozna/wyspy-owcze/premier-league/mecze|read.html|nrow tb_60
 2024-07-03|https://www.flashscore.pl/pilka-nozna/zea/uae-league/mecze|read.html|nrow tb_0
 2024-07-03|https://www.flashscore.pl/pilka-nozna/zea/arabian-gulf-cup/mecze|read.html|nrow tb_0
+2024-07-03|https://www.flashscore.pl/pilka-nozna/swiat/mistrzostwa-swiata/mecze|read.html|nrow tb_124
+2024-07-03|https://www.flashscore.pl/pilka-nozna/europa/euro/mecze|read.html|nrow tb_4
+2024-07-03|https://www.flashscore.pl/pilka-nozna/swiat/mecze-towarzyskie/mecze|read.html|nrow tb_34
