@@ -404,7 +404,8 @@ scrap_odds = function(.lnk, ...){
 # 2.3. SCRAP SCHEDULE ##############################################################
 
 if(ARG_TYPE == 'schedule'){
-  arch_ = readxl::read_xlsx(str_glue('data/mecze_aktualne.xlsm'), sheet = 'TAB_aktualne') %>%
+  arch_ = read.csv('data/TAB_league_list.csv') %>%
+    fsubset(select==1) %>%
     fselect(wyniki, terminarz, kraj, liga, liga_nr)  %>% 
     fmutate(terminarz = gsub('spotkania','mecze', terminarz))  
   # 
@@ -435,7 +436,8 @@ if(ARG_TYPE == 'schedule'){
   # 2.4. SCRAP UPDATE ##############################################################
 } else if(ARG_TYPE == 'update'){                          
   IF_update = T
-  arch_ = readxl::read_xlsx(str_glue('data/mecze_aktualne.xlsm'), sheet = 'TAB_aktualne') %>%
+  arch_ = read.csv('data/TAB_league_list.csv') %>%
+    fsubset(select==1) %>%
     fselect(wyniki, terminarz, kraj, liga, liga_nr)  %>% 
     fmutate(terminarz = gsub('spotkania','mecze', terminarz)) 
   #
@@ -561,19 +563,25 @@ if(ARG_TYPE == 'schedule'){
 if(F){
   library(readr) ; library(purrr)
   fls = 'log/log_ftb_schedule.txt'
-  fls = 'log/log_ftb_history_update.txt'
   fls = 'log/log_ftb_odds.txt'
+  fls = 'log/log_ftb_history_update.txt'
   
-  df_log = read_lines(fls) %>% 
+  df_log = 
+    read_lines(fls) %>% 
     keep(grepl('tb_0', .)) %>%
     as.data.frame() %>%
     setnames('path') %>%
     tidyr::separate(col = path, into = c('date', 'www', 'info'), sep = '\\|') %>%
     fmutate(n = parse_number(info)) %>%
-    group_by(www) %>% tally %>% arrange(desc(n))
+    group_by(www) %>% tally %>% arrange(desc(n)) %>%
+    pull(www) %>%
+    substring(.,1, str_length(.)-1)
    
-  arch_ = readxl::read_xlsx(str_glue('data/mecze_aktualne.xlsm'), sheet = 'TAB_aktualne') 
-   
+  arch_ = read.csv('data/TAB_league_list.csv') %>%
+    fmutate(select = fifelse(wyniki %in% df_log, 0, 1)) 
+  
+  write.csv(arch_, 'data/TAB_league_list.csv')
+  
 }
-
-
+ 
+ 
