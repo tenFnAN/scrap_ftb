@@ -20,7 +20,7 @@ source('functions.R')
 # 1.0. CONST INIT ##############################################################
 date_       = as.Date(Sys.time())
 seq_sampler = seq(0.5, 1.5, 0.2)
-
+SELE_HIDE   = if(Sys.info()['sysname'] == 'Windows'){F}else{T}
 # scrap_start_session(.hide = T, check = F)
 scrap_pilka_ = function(.url, .liga_nr = '1', .if_all_season = F, .time_break = 1.5, ...){
   # match.call zwraca nazwe wywolywanej funkcji
@@ -125,7 +125,7 @@ scrap_pilka_ = function(.url, .liga_nr = '1', .if_all_season = F, .time_break = 
              error = function(e){
                if(exists('pid')){scrap_kill_session( )}  
                if(.Platform$OS.type == 'windows'){
-                 scrap_start_session(.hide = T, check = F)
+                 scrap_start_session(.hide = SELE_HIDE, check = F)
                }else{
                  # remote_driver$close()
                  # remote_driver$closeall()
@@ -176,7 +176,7 @@ scrap_pilka_ = function(.url, .liga_nr = '1', .if_all_season = F, .time_break = 
     if(exists('pid')){scrap_kill_session( )} 
     Sys.sleep(1) 
     if(.Platform$OS.type == 'windows'){
-      scrap_start_session(.hide = T, check = F)
+      scrap_start_session(.hide = SELE_HIDE, check = F)
     }else{
       scrap_start_session()
     } 
@@ -282,7 +282,7 @@ scrap_schedule = function(.url, .liga_nr, ...){
     if(exists('pid')){scrap_kill_session( )} 
     Sys.sleep(1) 
     if(.Platform$OS.type == 'windows'){
-      scrap_start_session(.hide = T, check = F)
+      scrap_start_session(.hide = SELE_HIDE, check = F)
     }else{
       scrap_start_session()
     } 
