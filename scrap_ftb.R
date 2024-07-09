@@ -405,7 +405,7 @@ scrap_odds = function(.lnk, ...){
 
 if(ARG_TYPE == 'schedule'){
   arch_ = read.csv('data/TAB_league_list.csv') %>%
-    fsubset(select==1) %>%
+    # fsubset(select==1) %>%
     fselect(wyniki, terminarz, kraj, liga, liga_nr)  %>% 
     fmutate(terminarz = gsub('spotkania','mecze', terminarz))  
   # 
@@ -437,7 +437,7 @@ if(ARG_TYPE == 'schedule'){
 } else if(ARG_TYPE == 'update'){                          
   IF_update = T
   arch_ = read.csv('data/TAB_league_list.csv') %>%
-    fsubset(select==1) %>%
+    # fsubset(select==1) %>%
     fselect(wyniki, terminarz, kraj, liga, liga_nr)  %>% 
     fmutate(terminarz = gsub('spotkania','mecze', terminarz)) 
   #
