@@ -561,6 +561,22 @@ if(ARG_TYPE == 'schedule'){
 }
 
 if(F){
+  # update links [scrap_archiwum.R]
+  TAB_archiwum %>%  
+    fmutate(
+      tmp = gsub('https://www\\.flashscore\\.pl\\/pilka-nozna\\/', '', liga),
+      n   = str_count(tmp, '/')
+    ) %>%
+    tidyr::separate(col = tmp, into = c('kraj', 'liga'), sep = '/') %>%
+    fmutate(
+      wyniki    = paste('https://www.flashscore.pl/pilka-nozna', '/', kraj, '/', url, '/wyniki', sep = ''),
+      terminarz = paste('https://www.flashscore.pl/pilka-nozna', '/', kraj, '/', url, '/mecze', sep = '')
+    ) %>%
+    fsubset(id_season==1) %>%
+    fselect(wyniki, terminarz, kraj, liga, liga_nr) %>%
+    write.csv('data/TAB_league_list.csv')
+  
+  # logs
   library(readr) ; library(purrr)
   fls = 'log/log_ftb_schedule.txt'
   fls = 'log/log_ftb_odds.txt'
@@ -582,6 +598,8 @@ if(F){
   
   write.csv(arch_, 'data/TAB_league_list.csv')
   
+ 
+ 
 }
  
  
