@@ -3116,3 +3116,5 @@
 2024-07-15|https://www.flashscore.pl/pilka-nozna/wyspy-owcze/premier-league/mecze|read.html|nrow tb_55
 2024-07-15|https://www.flashscore.pl/pilka-nozna/zea/uae-league/mecze|read.html|nrow tb_7
 2024-07-15|https://www.flashscore.pl/pilka-nozna/zea/league-cup/mecze|read.html|nrow tb_0
+2024-07-16|https://www.flashscore.pl/pilka-nozna/swiat/miedzyklubowe-towarzyskie-2024/mecze|fuck up, start again
+2024-07-16|https://www.flashscore.pl/pilka-nozna/swiat/miedzyklubowe-towarzyskie-2024/mecze|read.html|nrow tb_235
