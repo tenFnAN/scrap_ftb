@@ -3118,3 +3118,4 @@
 2024-07-15|https://www.flashscore.pl/pilka-nozna/zea/league-cup/mecze|read.html|nrow tb_0
 2024-07-16|https://www.flashscore.pl/pilka-nozna/swiat/miedzyklubowe-towarzyskie-2024/mecze|fuck up, start again
 2024-07-16|https://www.flashscore.pl/pilka-nozna/swiat/miedzyklubowe-towarzyskie-2024/mecze|read.html|nrow tb_235
+2024-07-17|https://www.flashscore.pl/pilka-nozna/swiat/miedzyklubowe-towarzyskie-2024/mecze|read.html|nrow tb_177
