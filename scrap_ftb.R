@@ -452,8 +452,8 @@ if(ARG_TYPE == 'schedule'){
   
   if(IF_update){
     TAB_archiwum = fsubset(TAB_archiwum, id_season %in% c(1)) %>%
-      fmutate(url = paste0(liga, '/', 'wyniki/')) %>%
-      fsubset(!is.na(kraj))
+      fmutate(url = paste0(liga, '/', 'wyniki/')) #%>%
+      #fsubset(!is.na(kraj))
   }else{
     TAB_archiwum = TAB_archiwum %>%  
       fmutate(
