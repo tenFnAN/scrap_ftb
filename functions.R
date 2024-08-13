@@ -76,22 +76,15 @@ scrap_kill_session = function(.pid = pid, .driver = remote_driver){
   if(exists('pid', envir = .GlobalEnv)){  rm(pid, envir = .GlobalEnv) ; gc() } 
 }
 
-tidy_rownumber = function(dat_, by_, col_name = 'id'){
-  ds = as.data.table(dat_) 
-  str_eval = paste0('ds[,', parse(text=col_name)  , ' := as.integer(row.names(.SD)), by = list(', paste0("get('", by_ ,"')", collapse = ','), ')]')
-  ds = eval(parse(text=str_eval))
-  
-  # ds[, 'id' := row.names(.SD), by = list(P1)] 
+tidy_rownumber = function(ds, by_, col_name = 'id'){
+  ds = as.data.table(ds) 
+  ds[, (col_name) := as.integer(row.names(.SD)), by = by_] 
   as.data.frame(ds)
 }
-tidy_slice_rows = function(ds, by_ = c(param_grouping, 'date_'), iloc = 1){
-  str_eval = paste0('ds[ds[, .I[1:get("iloc")], by = list(', paste0("get('", by_ ,"')", collapse = ','), ') ]$V1]') 
+tidy_slice_rows <- function(ds, by_, iloc = 1){
   ds = data.table::as.data.table(ds)
-  ds = eval(parse(text=str_eval))
-  # ds = ds[ds[, .I[1], by = list(P1, yr, NAME_T) ]$V1] 
-  ds = eval(parse(text=paste0('ds[!is.na(get( by_[1] ) ),]'))) # filtrowanie brakow
-  ds = as.data.frame(ds)
-  ds
+  inx <- ds[, .I[1:min(.N, iloc)], by = by_]$V1
+  as.data.frame(ds[inx])
 }
 
 change_polish_characters = function(x){
