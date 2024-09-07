@@ -421,8 +421,9 @@ if(ARG_TYPE == 'schedule'){
     Sys.sleep( sample(seq_sampler, 1) ) 
   }
   #  
-  TAB_schedule_raw = readRDS(str_glue('data/ftb/TAB_terminarz.rds')) %>% tidy_slice_rows('link_kursy') %>% fmutate(update=Sys.time())
+  TAB_schedule_raw = arrow::read_parquet('data/ftb/TAB_terminarz.parquet') %>% tidy_slice_rows('link_kursy') %>% fmutate(update=Sys.time())
   # 
+   
   funique(rowbind(
     TAB_schedule_raw,
     funique(fsubset(TAB_sched, !is.na(team_a) )) %>% fmutate(update=Sys.time(), odds_u_2_5=NA,odds_u_3_5=NA,odds_u_4_5=NA) 
@@ -431,7 +432,7 @@ if(ARG_TYPE == 'schedule'){
     tidy_slice_rows('link_kursy') %>%
     fselect(-update) %>%
     fsubset(between(data, date_-3, date_ + 33 )) %>%
-    saveRDS(str_glue('data/ftb/TAB_terminarz.rds'))
+    arrow::write_parquet('data/ftb/TAB_terminarz.parquet') 
   
   # 2.4. SCRAP UPDATE ##############################################################
 } else if(ARG_TYPE == 'update'){                          
@@ -441,7 +442,8 @@ if(ARG_TYPE == 'schedule'){
     fselect(wyniki, terminarz, kraj, liga, liga_nr)  %>% 
     fmutate(terminarz = gsub('spotkania','mecze', terminarz)) 
   #
-  TAB_archiwum = readRDS(str_glue('data/TAB_archiwum.rds')) %>% 
+  TAB_archiwum = 
+    arrow::read_parquet('data/TAB_archiwum.parquet') %>%  
     group_by(liga) %>%
     mutate(id_season = row_number()) %>%
     ungroup() %>%
@@ -495,7 +497,7 @@ if(ARG_TYPE == 'schedule'){
     ) 
   # save 
   if(IF_update){  
-    TAB_arch     = readRDS(str_glue('data/ftb/TAB_historical.rds'))
+    TAB_arch     = arrow::read_parquet('data/ftb/TAB_historical.parquet')  
     TAB_arch     = rbind(TAB_arch, TAB_arch_tmp) %>% funique()
   }else{
     TAB_arch     = TAB_arch_tmp
@@ -503,14 +505,13 @@ if(ARG_TYPE == 'schedule'){
   # 
   fsubset(TAB_arch, !is.na(team_a) & !is.na(team_score_a) & !is.na(team_score_b) & !is.na(data)) %>% 
     tidy_slice_rows(by_ = c('kraj', 'liga', 'liga_', 'liga_nr', 'data',  'team_a', 'team_b')) %>%
-    funique() %>% 
-    saveRDS(str_glue('data/ftb/TAB_historical.rds'))
-  
-  # saveRDS(TAB_arch_tmp, str_glue('data/ftb/TAB_historical2.rds'))
+    funique() %>%
+    arrow::write_parquet('data/ftb/TAB_historical.parquet')  
+   
 } else if(ARG_TYPE == 'odds'){
   # 2.5. SCRAP ODDS ##############################################################
-  TAB_schedule_raw = readRDS(str_glue('data/ftb/TAB_terminarz.rds')) %>% tidy_slice_rows('link_kursy')
-  TAB_odds_raw     = readRDS(str_glue('data/ftb/TAB_odds.rds'))      %>% tidy_slice_rows('link_kursy')
+  TAB_schedule_raw = arrow::read_parquet('data/ftb/TAB_terminarz.parquet') %>% tidy_slice_rows('link_kursy')
+  TAB_odds_raw     = arrow::read_parquet('data/ftb/TAB_odds.parquet')  %>% tidy_slice_rows('link_kursy')
   
   TAB_sched =  
     fsubset(TAB_schedule_raw, 
@@ -548,7 +549,7 @@ if(ARG_TYPE == 'schedule'){
   funique(rowbind(TAB_odds_raw, select(TAB_odds_, link_kursy, matches('odds')))) %>%
     fsubset(!is.na(odds_u_2_5) | !is.na(odds_u_3_5) | !is.na(odds_u_4_5)) %>% 
     tidy_slice_rows('link_kursy') %>%
-    saveRDS(str_glue('data/ftb/TAB_odds.rds'))
+    arrow::write_parquet('data/ftb/TAB_odds.parquet')  
   # SAVE schedule
   rowbind(
     fsubset(TAB_schedule_raw, !link_kursy %in% c(TAB_odds$link_kursy)),
@@ -556,7 +557,7 @@ if(ARG_TYPE == 'schedule'){
       select(-matches('odds')) %>%
       dplyr::left_join(TAB_odds, by = 'link_kursy') 
   ) %>%
-    saveRDS(str_glue('data/ftb/TAB_terminarz.rds'))
+    arrow::write_parquet('data/ftb/TAB_terminarz.parquet') 
  
 }
 
