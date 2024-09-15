@@ -296,8 +296,8 @@ scrap_odds = function(.lnk, ...){
     # 
     tb_odds = data.frame('link_kursy' = .lnk, 'odds_u_2_5' = NA, 'odds_u_3_5' = NA, 'odds_u_4_5' = NA)
     .url = paste0('https://www.flashscore.pl/mecz/', .lnk, '/#/zestawienie-kursow/powyzej-ponizej/koniec-meczu')
-    cat('\n start' , file = str_glue('log/log_ftb_odds.txt'), append = T) 
-    cat(paste0('\n', .url) , file = str_glue('log/log_ftb_odds.txt'), append = T) 
+    # cat('\n start' , file = str_glue('log/log_ftb_odds.txt'), append = T) 
+    # cat(paste0('\n', .url) , file = str_glue('log/log_ftb_odds.txt'), append = T) 
     scrap_navigate( .url )  
     
     Sys.sleep( sample(seq_sampler, 1) )
@@ -373,7 +373,7 @@ scrap_odds = function(.lnk, ...){
     }else{
       print('no odds')
     }
-    cat('\n end' , file = str_glue('log/log_ftb_odds.txt'), append = T) 
+    # cat('\n end' , file = str_glue('log/log_ftb_odds.txt'), append = T) 
     Sys.sleep( 0.3 )
     # if(F){
     #   odds_kursy = odds_tabelka  %>%
@@ -392,7 +392,7 @@ scrap_odds = function(.lnk, ...){
   }, error = function(e) {
     assign('i_try', i_try+1,envir = globalenv())
     print(str_glue('try:{i_try}'))
-    cat('\n fuck up, start again', file = str_glue('log/log_ftb_odds.txt'), append = T)
+    # cat('\n fuck up, start again', file = str_glue('log/log_ftb_odds.txt'), append = T)
     if(exists('pid')){scrap_kill_session( )} 
     Sys.sleep(1) 
     scrap_start_session()   
