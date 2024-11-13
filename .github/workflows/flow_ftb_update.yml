@@ -1,6 +1,6 @@
 # Name of the workflow
 name: scrap_ftb_update
-# Event - What starts this workflow?
+# Event - What starts this workflow? / trigger
 on:
   workflow_dispatch:
   schedule:
