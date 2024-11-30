@@ -450,7 +450,8 @@ if(ARG_TYPE == 'schedule'){
     fsubset(id_season %in% 1:3) %>% # ile ostatnich sezonow?
     mutate(#url = paste0('https://www.flashscore.pl/', url, 'wyniki/'), 
       id_ = row_number()) %>%
-    join(arch_[,c('wyniki', 'kraj', 'liga')] %>% frename(ligaa = liga) %>% fmutate(wyniki = gsub('\\/wyniki', '', wyniki)), on = c('liga' = 'wyniki'))
+    join(arch_[,c('wyniki', 'kraj', 'liga')] %>% frename(ligaa = liga) %>% fmutate(wyniki = gsub('\\/wyniki', '', wyniki)), 
+         on = c('liga' = 'wyniki'))
   
   if(IF_update){
     TAB_archiwum = fsubset(TAB_archiwum, id_season %in% c(1)) %>%
