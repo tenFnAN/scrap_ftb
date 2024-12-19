@@ -412,7 +412,7 @@ if(ARG_TYPE == 'schedule'){
   scrap_start_session() 
   # 
   TAB_sched = data.frame()
-  for(i in 1:nrow(arch_) ){ # nrow(arch_)
+  for(i in 1:nrow(arch_) ){ # nrow(arch_) link_ = 'https://www.flashscore.pl/pilka-nozna/europa/liga-konfetrencji/mecze'
     link_ = arch_$terminarz[i]
     print(link_) ; print(paste0(which(arch_$terminarz == link_), '/', nrow(arch_)))
     

@@ -19403,3 +19403,6 @@
 2024-12-19|https://www.flashscore.pl/pilka-nozna/wyspy-owcze/premier-league/mecze|read.html|nrow tb_0
 2024-12-19|https://www.flashscore.pl/pilka-nozna/zea/uae-league/mecze|read.html|nrow tb_36
 2024-12-19|https://www.flashscore.pl/pilka-nozna/zea/league-cup/mecze|read.html|nrow tb_8
+2024-12-19|https://www.flashscore.pl/pilka-nozna/europa/liga-konfetrencji/mecze|fuck up, start again
+2024-12-19|https://www.flashscore.pl/pilka-nozna/europa/liga-konfetrencji/mecze|read.html|nrow tb_18|fuck up, start again
+2024-12-19|https://www.flashscore.pl/pilka-nozna/europa/liga-konfetrencji/mecze|read.html|nrow tb_18
