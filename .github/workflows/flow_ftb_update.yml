@@ -12,7 +12,7 @@ on:
     # 4. Entry: Month of the year when the process will be started [1-12]
     # 5. Entry: Weekday when the process will be started [0-6] [0 is Sunday]
     # So according to this '0 9 * * 1' will run 9:00 every monday.
-  - cron:  '0 0 * * 1,3,5'
+  - cron:  '0 0 * * 1,3,5,6,0'
 permissions:
   contents: write
   
