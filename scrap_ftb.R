@@ -343,31 +343,60 @@ scrap_odds = function(.lnk, ...){
       # linia pierwsza czesc
       # odds_kursy %>%  html_text()
       
-      # dane z tabelek : kursy
-      # xc = www_ %>% 
-      #   html_nodes('.ui-table__row') %>% 
-      #   html_text()
+      # dane z tabelek : kursy 
+      ods = odds_kursy %>%
+        html_nodes('.ui-table__row') %>%
+        html_text() 
       
-      odds_linia_ = odds_tabelka  %>%     
-        html_nodes( xpath=".//span[@class='oddsCell__noOddsCell']") %>%
-        html_text()  
-      odds_id_poprawne = c( which( odds_linia_ != lead(odds_linia_)))
-      odds_id_poprawne = c(odds_id_poprawne, max(odds_id_poprawne)+1)
-      
+      # odds_linia_ = odds_tabelka  %>%     
+      #   html_nodes( xpath=".//span[@class='oddsCell__noOddsCell']") %>%
+      #   html_text()  
+      # odds_id_poprawne = c( which( odds_linia_ != lead(odds_linia_)))
+      # odds_id_poprawne = c(odds_id_poprawne, max(odds_id_poprawne)+1)
+      # 
+      # for( odds_line in c('2.5','3.5', '4.5')){
+      #   id_linia = which( odds_linia_[odds_id_poprawne] == odds_line)[1]
+      #   print(id_linia)
+      #   print(paste0('linia ', odds_line))
+      #   if( length(id_linia) >= 1 && !is.na(id_linia) && is.numeric(id_linia) && id_linia <= length(odds_kursy) ){ 
+      #     print(paste0('before linia ', odds_line))
+      #     print(paste0('len odds', length(odds_kursy)))
+      #     tb_odds[,paste0('odds_u_',gsub('\\.', '_', odds_line))] =  
+      #       odds_kursy[[ id_linia ]] %>%     
+      #       html_nodes(  xpath=".//a[@class='oddsCell__odd oddsCell__highlight ']") %>%
+      #       html_text() %>% as.numeric() %>% min
+      #     # tb_odds[i,]
+      #     print(paste0('after linia ', odds_line))
+      #   }  
+      # }
       for( odds_line in c('2.5','3.5', '4.5')){
-        id_linia = which( odds_linia_[odds_id_poprawne] == odds_line)[1]
+        # id_linia = which( odds_linia_[odds_id_poprawne] == odds_line)[1]
         print(id_linia)
         print(paste0('linia ', odds_line))
-        if( length(id_linia) >= 1 && !is.na(id_linia) && is.numeric(id_linia) && id_linia <= length(odds_kursy) ){ 
-          print(paste0('before linia ', odds_line))
-          print(paste0('len odds', length(odds_kursy)))
-          tb_odds[,paste0('odds_u_',gsub('\\.', '_', odds_line))] =  
-            odds_kursy[[ id_linia ]] %>%     
-            html_nodes(  xpath=".//a[@class='oddsCell__odd oddsCell__highlight ']") %>%
-            html_text() %>% as.numeric() %>% min
-          # tb_odds[i,]
-          print(paste0('after linia ', odds_line))
-        }  
+        id_linia = ods[str_detect(ods, paste0('^',odds_line))]
+        id_linia = gsub(paste0('^',odds_line), '', id_linia)
+        # numbers <- str_extract_all(id_linia, "\\d+\\.\\d{1}")[[1]]
+        odds_ = c()
+        for( odd_ in id_linia){
+          id_dot = gregexpr('\\.', odd_)[[1]][2]
+          odd_min = c(
+            as.numeric(substring(odd_, 1, id_dot-2)),
+            as.numeric(substring(odd_, id_dot-1))
+          ) %>%
+            min(na.rm = T)
+          odds_ = c(odds_, odd_min)
+        } 
+        tb_odds[,paste0('odds_u_',gsub('\\.', '_', odds_line))] = fmedian(odds_)
+        # if( length(id_linia) >= 1 ){ 
+        #   print(paste0('before linia ', odds_line))
+        #   print(paste0('len odds ', length(id_linia)))
+        #   tb_odds[,paste0('odds_u_',gsub('\\.', '_', odds_line))] =  
+        #     odds_kursy[[ id_linia ]] %>%     
+        #     html_nodes(  xpath=".//a[@class='oddsCell__odd oddsCell__highlight ']") %>%
+        #     html_text() %>% as.numeric() %>% min
+        #   # tb_odds[i,]
+        #   print(paste0('after linia ', odds_line))
+        # }  
       }
       
     }else{
