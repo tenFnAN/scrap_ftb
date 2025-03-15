@@ -371,7 +371,7 @@ scrap_odds = function(.lnk, ...){
       # }
       for( odds_line in c('2.5','3.5', '4.5')){
         # id_linia = which( odds_linia_[odds_id_poprawne] == odds_line)[1]
-        print(id_linia)
+        print(odds_line)
         print(paste0('linia ', odds_line))
         id_linia = ods[str_detect(ods, paste0('^',odds_line))]
         id_linia = gsub(paste0('^',odds_line), '', id_linia)
@@ -566,7 +566,7 @@ if(ARG_TYPE == 'schedule'){
     
     Sys.sleep( sample(seq(0.5, 1, 0.2), 1) ) 
   } 
-  #  
+    #  
   TAB_odds_ = rowbind(
     fsubset(TAB_schedule_raw, !link_kursy %in% c(TAB_odds$link_kursy)),
     fsubset(TAB_schedule_raw, link_kursy %in% c(TAB_odds$link_kursy)) %>% 
