@@ -258,6 +258,9 @@ scrap_schedule = function(.url, .liga_nr, ...){
     tb_[1,'year'] = remote_driver$getPageSource()[[1]] %>%
       read_html() %>% html_node('.duelParticipant__startTime') %>% html_text() %>% str_sub(7, 10) %>% as.numeric()
     #print('after year')
+    if(is.na(tb_[1,'year'])){
+      tb_[1,'year'] = lubridate::year(Sys.time())
+    }
     #  
     tb_ = tb_ %>%
       fmutate(
