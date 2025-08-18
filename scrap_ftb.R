@@ -125,7 +125,8 @@ scrap_pilka_ = function(.url, .liga_nr = '1', .if_all_season = F, .time_break = 
              error = function(e){
                if(exists('pid')){scrap_kill_session( )}  
                if(.Platform$OS.type == 'windows'){
-                 scrap_start_session(.hide = SELE_HIDE, check = F)
+                 # scrap_start_session(.hide = SELE_HIDE, check = F)
+                 scrap_start_session(.hide = SELE_HIDE )
                }else{
                  # remote_driver$close()
                  # remote_driver$closeall()
@@ -176,7 +177,8 @@ scrap_pilka_ = function(.url, .liga_nr = '1', .if_all_season = F, .time_break = 
     if(exists('pid')){scrap_kill_session( )} 
     Sys.sleep(1) 
     if(.Platform$OS.type == 'windows'){
-      scrap_start_session(.hide = SELE_HIDE, check = F)
+      # scrap_start_session(.hide = SELE_HIDE, check = F)
+      scrap_start_session(.hide = SELE_HIDE)
     }else{
       scrap_start_session()
     } 
@@ -285,7 +287,8 @@ scrap_schedule = function(.url, .liga_nr, ...){
     if(exists('pid')){scrap_kill_session( )} 
     Sys.sleep(1) 
     if(.Platform$OS.type == 'windows'){
-      scrap_start_session(.hide = SELE_HIDE, check = F)
+      # scrap_start_session(.hide = SELE_HIDE, check = F)
+      scrap_start_session(.hide = SELE_HIDE)
     }else{
       scrap_start_session()
     } 
