@@ -508,7 +508,7 @@ if(ARG_TYPE == 'schedule'){
   
   TAB_arch_tmp = data.frame()
   arch_        = TAB_archiwum   
-  for(i in 1:nrow(arch_)-1 ){ # i = 261   
+  for(i in 1:(nrow(arch_)-1) ){ # i = 261   
     link_ = arch_$url[i] 
     print(link_) ; print(paste0(which(arch_$url == link_), '/', nrow(arch_)))
     # 
