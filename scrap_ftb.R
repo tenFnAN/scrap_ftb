@@ -532,6 +532,7 @@ if(ARG_TYPE == 'schedule'){
       T ~ '' ),
       godzina = gsub('(Walkower)|(Pokarn.)|(Podogr.)|(Anulowane)', '', godzina)
     ) 
+  print('after update loop2')
   # save 
   if(IF_update){  
     TAB_arch     = arrow::read_parquet('data/ftb/TAB_historical.parquet')  
@@ -540,11 +541,12 @@ if(ARG_TYPE == 'schedule'){
     TAB_arch     = TAB_arch_tmp
   } 
   # 
+  print('after update loop3')
   fsubset(TAB_arch, !is.na(team_a) & !is.na(team_score_a) & !is.na(team_score_b) & !is.na(data)) %>% 
     tidy_slice_rows(by_ = c('kraj', 'liga', 'liga_', 'liga_nr', 'data',  'team_a', 'team_b')) %>%
     funique() %>%
     arrow::write_parquet('data/ftb/TAB_historical.parquet')  
-   
+  print('after update loop4')
 } else if(ARG_TYPE == 'odds'){
   # 2.5. SCRAP ODDS ##############################################################
   TAB_schedule_raw = arrow::read_parquet('data/ftb/TAB_terminarz.parquet') %>% tidy_slice_rows('link_kursy')
