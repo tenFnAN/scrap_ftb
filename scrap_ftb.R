@@ -508,7 +508,7 @@ if(ARG_TYPE == 'schedule'){
   
   TAB_arch_tmp = data.frame()
   arch_        = TAB_archiwum   
-  for(i in 1:nrow(arch_) ){ # i = 261   
+  for(i in 1:nrow(arch_)-1 ){ # i = 261   
     link_ = arch_$url[i] 
     print(link_) ; print(paste0(which(arch_$url == link_), '/', nrow(arch_)))
     # 
@@ -521,6 +521,7 @@ if(ARG_TYPE == 'schedule'){
         .time_break   = ifelse(IF_update, 1.5, 3) ) 
     ) 
   }  
+  print('after update loop')
   TAB_arch_tmp = TAB_arch_tmp %>% 
     fmutate(across(grep('team_(a|b)', names(.), value = T), function(x) {trimws(gsub('\\([^)]+\\)', '', x))} )) %>%
     fmutate(info = case_when(
