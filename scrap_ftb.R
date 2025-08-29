@@ -542,11 +542,14 @@ if(ARG_TYPE == 'schedule'){
   } 
   # 
   print('after update loop3')
-  fsubset(TAB_arch, !is.na(team_a) & !is.na(team_score_a) & !is.na(team_score_b) & !is.na(data)) %>% 
+  TAB_arch = fsubset(TAB_arch, !is.na(team_a) & !is.na(team_score_a) & !is.na(team_score_b) & !is.na(data)) 
+  print('after update loop3 filter')
+  TAB_arch = TAB_arch %>% 
     tidy_slice_rows(by_ = c('kraj', 'liga', 'liga_', 'liga_nr', 'data',  'team_a', 'team_b')) %>%
-    funique() %>%
-    arrow::write_parquet('data/ftb/TAB_historical.parquet')  
-  print('after update loop4')
+    funique()  
+  print('after update loop3 slice')
+  arrow::write_parquet(TAB_arch, 'data/ftb/TAB_historical.parquet')  
+  print('after update loop3 save')
 } else if(ARG_TYPE == 'odds'){
   # 2.5. SCRAP ODDS ##############################################################
   TAB_schedule_raw = arrow::read_parquet('data/ftb/TAB_terminarz.parquet') %>% tidy_slice_rows('link_kursy')
