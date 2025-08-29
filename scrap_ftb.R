@@ -439,6 +439,7 @@ scrap_odds = function(.lnk, ...){
 # 2.3. SCRAP SCHEDULE ##############################################################
 
 if(ARG_TYPE == 'schedule'){
+  print("####### SCHEDULE #######")
   arch_ = read.csv('data/TAB_league_list.csv') %>%
     # fsubset(select==1) %>%
     fselect(wyniki, terminarz, kraj, liga, liga_nr)  %>% 
@@ -447,8 +448,8 @@ if(ARG_TYPE == 'schedule'){
   scrap_start_session() 
   # 
   TAB_sched = data.frame()
-  # for(i in 1:nrow(arch_) ){ # nrow(arch_) link_ = 'https://www.flashscore.pl/pilka-nozna/europa/liga-konfetrencji/mecze'
-  for(i in 1:5 ){
+  for(i in 1:nrow(arch_) ){ # nrow(arch_) link_ = 'https://www.flashscore.pl/pilka-nozna/europa/liga-konfetrencji/mecze'
+  # for(i in 1:5 ){
     link_ = arch_$terminarz[i]
     print(link_) ; print(paste0(which(arch_$terminarz == link_), '/', nrow(arch_)))
     
@@ -471,7 +472,8 @@ if(ARG_TYPE == 'schedule'){
     arrow::write_parquet('data/ftb/TAB_terminarz.parquet') 
   
   # 2.4. SCRAP UPDATE ##############################################################
-} else if(ARG_TYPE == 'update'){                          
+} else if(ARG_TYPE == 'update'){  
+  print("####### UPDATE #######")
   IF_update = T
   arch_ = read.csv('data/TAB_league_list.csv') %>%
     # fsubset(select==1) %>%
@@ -509,8 +511,8 @@ if(ARG_TYPE == 'schedule'){
   
   TAB_arch_tmp = data.frame()
   arch_        = TAB_archiwum   
-  # for(i in 1:(nrow(arch_)-1) ){ # i = 261 
-  for(i in 1:5 ){
+  for(i in 1:(nrow(arch_)-1) ){ # i = 261
+  # for(i in 1:5 ){
     link_ = arch_$url[i] 
     print(link_) ; print(paste0(which(arch_$url == link_), '/', nrow(arch_)))
     # 
@@ -557,6 +559,7 @@ if(ARG_TYPE == 'schedule'){
   print('after update loop3 save')
 } else if(ARG_TYPE == 'odds'){
   # 2.5. SCRAP ODDS ##############################################################
+  print("####### ODDS #######")
   TAB_schedule_raw = arrow::read_parquet('data/ftb/TAB_terminarz.parquet') %>% tidy_slice_rows('link_kursy')
   TAB_odds_raw     = arrow::read_parquet('data/ftb/TAB_odds.parquet')  %>% tidy_slice_rows('link_kursy')
   
