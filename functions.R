@@ -10,7 +10,7 @@ scrap_start_session = function(.browser = 'firefox', .port = 132L, .hide = F, ..
                                          # , check = F 
                                          ,...)  
   }else{
-    driver        <- RSelenium::rsDriver(browser = .browser, port = .port,... )  
+    driver        <- RSelenium::rsDriver(browser = .browser, port = .port, check = FALSE, ... )  
   }
   
   pid           <- driver$server$process$get_pid() # get the PID of the process you launched
