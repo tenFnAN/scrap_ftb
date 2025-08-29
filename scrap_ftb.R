@@ -447,7 +447,8 @@ if(ARG_TYPE == 'schedule'){
   scrap_start_session() 
   # 
   TAB_sched = data.frame()
-  for(i in 1:nrow(arch_) ){ # nrow(arch_) link_ = 'https://www.flashscore.pl/pilka-nozna/europa/liga-konfetrencji/mecze'
+  # for(i in 1:nrow(arch_) ){ # nrow(arch_) link_ = 'https://www.flashscore.pl/pilka-nozna/europa/liga-konfetrencji/mecze'
+  for(i in 1:5 ){
     link_ = arch_$terminarz[i]
     print(link_) ; print(paste0(which(arch_$terminarz == link_), '/', nrow(arch_)))
     
@@ -508,7 +509,8 @@ if(ARG_TYPE == 'schedule'){
   
   TAB_arch_tmp = data.frame()
   arch_        = TAB_archiwum   
-  for(i in 1:(nrow(arch_)-1) ){ # i = 261   
+  # for(i in 1:(nrow(arch_)-1) ){ # i = 261 
+  for(i in 1:5 ){
     link_ = arch_$url[i] 
     print(link_) ; print(paste0(which(arch_$url == link_), '/', nrow(arch_)))
     # 
@@ -550,6 +552,7 @@ if(ARG_TYPE == 'schedule'){
     tidy_slice_rows(by_ = c('kraj', 'liga', 'liga_', 'liga_nr', 'data',  'team_a', 'team_b')) %>%
     funique()  
   print('after update loop3 slice')
+  print(nrow(TAB_arch))
   arrow::write_parquet(TAB_arch, 'data/ftb/TAB_historical.parquet')  
   print('after update loop3 save')
 } else if(ARG_TYPE == 'odds'){
