@@ -536,7 +536,9 @@ if(ARG_TYPE == 'schedule'){
   # save 
   if(IF_update){  
     TAB_arch     = arrow::read_parquet('data/ftb/TAB_historical.parquet')  
+    print('after update loop2-arrow read')
     TAB_arch     = rbind(TAB_arch, TAB_arch_tmp) %>% funique()
+    print('after update loop2-rbind funique')
   }else{
     TAB_arch     = TAB_arch_tmp
   } 
