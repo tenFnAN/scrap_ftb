@@ -49,13 +49,14 @@ jobs:
       # commit/push ZAWSZE 
       - name: Commit files (always)
         if: ${{ always() }}
+        working-directory: ${{ github.workspace }}
         run: |
-          git config --local user.name "github-actions"
-          git config --local user.email "actions@github.com"
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
           git add -A
           git commit -m "Autosave $(date -u +'%Y-%m-%dT%H:%M:%SZ')" || echo "Nothing to commit"
           git pull --rebase --autostash || true
-          git push || true
+          git push || true 
 
       # jeśli scraper padł, oznacz run jako failed (ale po autosave)
       - name: Mark failed when scraper failed
