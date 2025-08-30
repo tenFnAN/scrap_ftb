@@ -529,7 +529,7 @@ if(ARG_TYPE == 'schedule'){
       ) 
     
     if( (i %% 5 == 0) | i == nrow(arch_)){
-      TAB_arch_tmp = TAB_arch_tmp %>% 
+      TAB_arch_tmp_ = TAB_arch_tmp %>% 
         fmutate(across(grep('team_(a|b)', names(.), value = T), function(x) {trimws(gsub('\\([^)]+\\)', '', x))} )) %>%
         fmutate(info = case_when(
           grepl('Walkower',  godzina) ~ 'Walkower',
@@ -539,7 +539,7 @@ if(ARG_TYPE == 'schedule'){
           T ~ '' ),
           godzina = gsub('(Walkower)|(Pokarn.)|(Podogr.)|(Anulowane)', '', godzina)
         ) 
-      TAB_arch_     = rbind(TAB_arch, TAB_arch_tmp) %>% funique() %>%
+      TAB_arch_     = rbind(TAB_arch, TAB_arch_tmp_) %>% funique() %>%
         fsubset(!is.na(team_a) & !is.na(team_score_a) & !is.na(team_score_b) & !is.na(data)) %>% 
         tidy_slice_rows(by_ = c('kraj', 'liga', 'liga_', 'liga_nr', 'data',  'team_a', 'team_b')) %>%
         funique()
