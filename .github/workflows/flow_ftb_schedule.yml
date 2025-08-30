@@ -1,5 +1,5 @@
 # Name of the workflow
-name: scrap_ftb_update
+name: scrap_ftb_schedule
 # Event - What starts this workflow? / trigger
 on:
   workflow_dispatch:
@@ -21,7 +21,7 @@ concurrency:
   
 # Jobs - What the computer should do? 
 jobs:
-  scrap_ftb_update:
+  scrap_ftb_schedule:
     runs-on: ubuntu-latest
     services:
       # https://stackoverflow.com/questions/77936473/how-can-i-access-file-downloaded-using-rselenium-in-github-actions
