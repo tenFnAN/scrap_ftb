@@ -490,7 +490,10 @@ if(ARG_TYPE == 'schedule'){
       id_ = row_number()) %>%
     join(arch_[,c('wyniki', 'kraj', 'liga')] %>% frename(ligaa = liga) %>% fmutate(wyniki = gsub('\\/wyniki', '', wyniki)), 
          on = c('liga' = 'wyniki'))
-  
+  # save 
+  if(IF_update){  
+    TAB_arch     = arrow::read_parquet('data/ftb/TAB_historical.parquet')  
+  }
   if(IF_update){
     TAB_archiwum = fsubset(TAB_archiwum, id_season %in% c(1)) %>%
       fmutate(url = paste0(liga, '/', 'wyniki/')) #%>%
@@ -511,7 +514,7 @@ if(ARG_TYPE == 'schedule'){
   
   TAB_arch_tmp = data.frame()
   arch_        = TAB_archiwum   
-  for(i in 1:(nrow(arch_)-1) ){ # i = 261
+  for(i in 1:(nrow(arch_)) ){ # i = 261
   # for(i in 1:5 ){
     link_ = arch_$url[i] 
     print(link_) ; print(paste0(which(arch_$url == link_), '/', nrow(arch_)))
@@ -523,40 +526,38 @@ if(ARG_TYPE == 'schedule'){
         .liga_nr      = arch_$liga_nr[i],  
         .if_all_season= !IF_update,
         .time_break   = ifelse(IF_update, 1.5, 3) ) 
-    ) 
-  }  
-  print('after update loop')
-  TAB_arch_tmp = TAB_arch_tmp %>% 
-    fmutate(across(grep('team_(a|b)', names(.), value = T), function(x) {trimws(gsub('\\([^)]+\\)', '', x))} )) %>%
-    fmutate(info = case_when(
-      grepl('Walkower',  godzina) ~ 'Walkower',
-      grepl('Pokarn.',   godzina) ~ 'Karne',
-      grepl('Podogr.',   godzina) ~ 'Dogrywka',
-      grepl('Anulowane', godzina) ~ 'Anulowane',
-      T ~ '' ),
-      godzina = gsub('(Walkower)|(Pokarn.)|(Podogr.)|(Anulowane)', '', godzina)
-    ) 
-  print('after update loop2')
+      ) 
+    
+    if( (i %% 5 == 0) | i == nrow(arch_)){
+      TAB_arch_tmp = TAB_arch_tmp %>% 
+        fmutate(across(grep('team_(a|b)', names(.), value = T), function(x) {trimws(gsub('\\([^)]+\\)', '', x))} )) %>%
+        fmutate(info = case_when(
+          grepl('Walkower',  godzina) ~ 'Walkower',
+          grepl('Pokarn.',   godzina) ~ 'Karne',
+          grepl('Podogr.',   godzina) ~ 'Dogrywka',
+          grepl('Anulowane', godzina) ~ 'Anulowane',
+          T ~ '' ),
+          godzina = gsub('(Walkower)|(Pokarn.)|(Podogr.)|(Anulowane)', '', godzina)
+        ) 
+      TAB_arch_     = rbind(TAB_arch, TAB_arch_tmp) %>% funique() %>%
+        fsubset(!is.na(team_a) & !is.na(team_score_a) & !is.na(team_score_b) & !is.na(data)) %>% 
+        tidy_slice_rows(by_ = c('kraj', 'liga', 'liga_', 'liga_nr', 'data',  'team_a', 'team_b')) %>%
+        funique()
+      arrow::write_parquet(TAB_arch_, 'data/ftb/TAB_historical.parquet') 
+      print('after update save')
+    }
+  }   
   # save 
-  if(IF_update){  
-    TAB_arch     = arrow::read_parquet('data/ftb/TAB_historical.parquet')  
-    print('after update loop2-arrow read')
-    TAB_arch     = rbind(TAB_arch, TAB_arch_tmp) %>% funique()
-    print('after update loop2-rbind funique')
-  }else{
-    TAB_arch     = TAB_arch_tmp
-  } 
-  # 
-  print('after update loop3')
-  TAB_arch = fsubset(TAB_arch, !is.na(team_a) & !is.na(team_score_a) & !is.na(team_score_b) & !is.na(data)) 
-  print('after update loop3 filter')
-  TAB_arch = TAB_arch %>% 
-    tidy_slice_rows(by_ = c('kraj', 'liga', 'liga_', 'liga_nr', 'data',  'team_a', 'team_b')) %>%
-    funique()  
-  print('after update loop3 slice')
-  print(nrow(TAB_arch))
-  arrow::write_parquet(TAB_arch, 'data/ftb/TAB_historical.parquet')  
-  print('after update loop3 save')
+  # if(IF_update){    
+  #   TAB_arch     = rbind(TAB_arch, TAB_arch_tmp) %>% funique() 
+  # }else{
+  #   TAB_arch     = TAB_arch_tmp
+  # } 
+  #  
+  # TAB_arch = fsubset(TAB_arch, !is.na(team_a) & !is.na(team_score_a) & !is.na(team_score_b) & !is.na(data)) %>% 
+  #   tidy_slice_rows(by_ = c('kraj', 'liga', 'liga_', 'liga_nr', 'data',  'team_a', 'team_b')) %>%
+  #   funique()   
+  # arrow::write_parquet(TAB_arch, 'data/ftb/TAB_historical.parquet')   
 } else if(ARG_TYPE == 'odds'){
   # 2.5. SCRAP ODDS ##############################################################
   print("####### ODDS #######")
