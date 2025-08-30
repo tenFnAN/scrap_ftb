@@ -15,8 +15,7 @@ jobs:
     services:
       # https://stackoverflow.com/questions/77936473/how-can-i-access-file-downloaded-using-rselenium-in-github-actions
       selenium:
-        #image: selenium/standalone-firefox:111.0-20230328
-        image: selenium/standalone-firefox:latest   
+        image: selenium/standalone-firefox:111.0-20230328
         ports:
           - '4444:4444'
         volumes:
