@@ -1,64 +1,57 @@
-name: scrap_ftb_update
+name: scrap_ftb_update 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 1 * * 1,3,5,6,0'  
-
+  schedule: 
+  - cron:  '0 1 * * 1,3,5,6,0'
 permissions:
   contents: write
-
 concurrency:
   group: scrap-${{ github.ref }}
   cancel-in-progress: false
-
+  
 jobs:
   scrap_ftb_update:
     runs-on: ubuntu-latest
-    timeout-minutes: 180    
-
     services:
+      # https://stackoverflow.com/questions/77936473/how-can-i-access-file-downloaded-using-rselenium-in-github-actions
       selenium:
+        #image: selenium/standalone-firefox:111.0-20230328
         image: selenium/standalone-firefox:latest   
         ports:
           - '4444:4444'
         volumes:
-          - ${{ github.workspace }}/data/downloads:/home/seluser/Downloads
-
+          - /github/workspace/data/downloads:/home/seluser/Downloads
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: true
-
+# Install R
+      - uses: actions/checkout@v3
       - name: Setup R
         uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
-
+         # r-version: '4.2.1'
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          needs: check
- 
-      - name: Run scraper
-        id: scrape
-        continue-on-error: true
+          needs: check 
+          
+# Execute R script
+      - name: scrap 
+        run: | 
+          Rscript scrap_ftb.R --type update 
+      - name: Check disk and memory
         run: |
-          set -euo pipefail
-          echo "Start: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-          Rscript scrap_ftb.R --type update
-
-      # commit/push ZAWSZE 
-      - name: Commit files (always)
-        if: ${{ always() }}
-        working-directory: ${{ github.workspace }}
+          df -h
+          free -h || true
+# Commit & push
+      - name: Commit files
         run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add -A
-          git commit -m "Autosave $(date -u +'%Y-%m-%dT%H:%M:%SZ')" || echo "Nothing to commit"
-          git pull --rebase --autostash || true
-          git push || true 
-
-      # jeśli scraper padł, oznacz run jako failed (ale po autosave)
-      - name: Mark failed when scraper failed
-        if: ${{ steps.scrape.outcome == 'failure' }}
-        run: exit 1
+          git config --local user.name actions-user
+          git config --local user.email "actions@github.com"
+          git add data/ftb/*
+          git add log/*
+          git commit -am "GH ACTION Headlines $(date)"
+          #git pull origin main
+          git pull --rebase
+          git push origin main
+        env:
+          REPO_KEY: ${{secrets.GITHUB_TOKEN}}
+          username: github-actions
