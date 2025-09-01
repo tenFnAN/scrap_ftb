@@ -46,7 +46,9 @@ scrap_pilka_ = function(.url, .liga_nr = '1', .if_all_season = F, .time_break = 
     }
     
     Sys.sleep( sample(seq_sampler, 1) )  
+    print("start scrap")
     www_       = remote_driver$getPageSource()[[1]] %>% read_html()  
+    print("start read html")
     
     kraj_      = html_nodes(www_, '.breadcrumb__link') %>% html_text() %>% .[2]
     liga_      = html_nodes(www_, '.heading__name') %>% html_text() %>%
