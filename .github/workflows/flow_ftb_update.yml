@@ -20,6 +20,7 @@ jobs:
           - '4444:4444'
         volumes:
           - /github/workspace/data/downloads:/home/seluser/Downloads
+        options: --shm-size=2g
     steps:
 # Install R
       - uses: actions/checkout@v3
