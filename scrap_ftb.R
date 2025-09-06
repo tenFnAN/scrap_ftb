@@ -133,6 +133,7 @@ scrap_pilka_ = function(.url, .liga_nr = '1', .if_all_season = F, .time_break = 
                  # remote_driver$close()
                  # remote_driver$closeall()
                  print('start ses again')
+                 print(stringr::str_glue('https://www.flashscore.pl/mecz/{tb_$link_kursy[[1]]}/'))
                  scrap_start_session()
                  print('started ses again')
                } 
