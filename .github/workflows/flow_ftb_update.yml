@@ -2,9 +2,11 @@ name: scrap_ftb_update
 on:
   workflow_dispatch:
   schedule: 
-  - cron:  '0 1 * * 1,3,5,6,0'
+    - cron: '0 1 * * 1,3,5,6,0'
+
 permissions:
   contents: write
+
 concurrency:
   group: scrap-${{ github.ref }}
   cancel-in-progress: false
@@ -13,7 +15,6 @@ jobs:
   scrap_ftb_update:
     runs-on: ubuntu-latest
     services:
-      # https://stackoverflow.com/questions/77936473/how-can-i-access-file-downloaded-using-rselenium-in-github-actions
       selenium:
         image: selenium/standalone-firefox:111.0-20230328
         ports:
@@ -21,35 +22,62 @@ jobs:
         volumes:
           - /github/workspace/data/downloads:/home/seluser/Downloads
         options: --shm-size=2g
+
     steps:
-# Install R
+      # Install R
       - uses: actions/checkout@v3
+
       - name: Setup R
         uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
-         # r-version: '4.2.1'
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           needs: check 
-          
-# Execute R script
-      - name: scrap 
-        run: | 
-          Rscript scrap_ftb.R --type update 
-      - name: Check disk and memory
+
+      # ==== RUN 1: iteracje 1..200 ====
+      - name: scrap (1/2) 1..200
+        run: |
+          Rscript scrap_ftb.R --type update --start_i 1 --end_i 200
+
+      - name: Check disk and memory (after 1/2)
         run: |
           df -h
           free -h || true
-# Commit & push
-      - name: Commit files
+
+      # Commit & push po pierwszej turze (częściowy zapis)
+      - name: Commit files (after 1/2)
         run: |
           git config --local user.name actions-user
           git config --local user.email "actions@github.com"
           git add data/ftb/*
           git add log/*
-          git commit -am "GH ACTION Headlines $(date)"
-          #git pull origin main
+          git commit -am "GH ACTION partial (1/2) $(date)"
+          git pull --rebase
+          git push origin main
+        env:
+          REPO_KEY: ${{secrets.GITHUB_TOKEN}}
+          username: github-actions
+
+      # ==== RUN 2: iteracje 201..338 ====
+      - name: scrap (2/2) 201..338
+        run: |
+          Rscript scrap_ftb.R --type update --start_i 201 --end_i 338
+
+      - name: Check disk and memory (after 2/2)
+        run: |
+          df -h
+          free -h || true
+
+      # Finalny commit
+      - name: Commit files (final)
+        run: |
+          git config --local user.name actions-user
+          git config --local user.email "actions@github.com"
+          git add data/ftb/*
+          git add log/*
+          git commit -am "GH ACTION final (2/2) $(date)"
           git pull --rebase
           git push origin main
         env:

@@ -1,12 +1,19 @@
 library(optparse) 
 # 1.1. PREPARE PARAMETERS ##############################################################
 optionsList <- list( 
-  make_option(c("--type","-s"), default='schedule',help=" ") 
+  make_option(c("--type","-s"), default='schedule',help=" "),
+  make_option(c("--start_i"), type = "integer", default = 1,
+              help = "Początkowy indeks iteracji"),
+  make_option(c("--end_i"), type = "integer", default = Inf,
+              help = "Końcowy indeks iteracji") 
 )  
 parser = OptionParser(option_list = optionsList)
 arguments = parse_args(parser) 
 # 2.1. PARSE PARAMETERS ##############################################################
 ARG_TYPE = as.character(arguments$type)  
+ARG_iter_start = arguments$start_i
+ARG_iter_end = arguments$end_i
+
 
 #load libs
 # Rscript scrap_ftb.R --type schedule
@@ -519,51 +526,45 @@ if(ARG_TYPE == 'schedule'){
   
   TAB_arch_tmp = data.frame()
   arch_        = TAB_archiwum   
-  for(i in 1:(nrow(arch_)) ){ # i = 261
-  # for(i in 1:5 ){
-    link_ = arch_$url[i] 
-    print(link_) ; print(paste0(which(arch_$url == link_), '/', nrow(arch_)))
-    # 
-    TAB_arch_tmp = rowbind(
-      TAB_arch_tmp,
-      scrap_pilka_(
-        .url          = link_ , 
-        .liga_nr      = arch_$liga_nr[i],  
-        .if_all_season= !IF_update,
-        .time_break   = ifelse(IF_update, 1.5, 3) ) 
+  for(i in seq.int(ARG_iter_start, ARG_iter_end) ){ # i = 261
+    if( i <= nrow(arch_)){
+      link_ = arch_$url[i] 
+      print(link_) ; print(paste0(which(arch_$url == link_), '/', nrow(arch_)))
+      # 
+      TAB_arch_tmp = rowbind(
+        TAB_arch_tmp,
+        scrap_pilka_(
+          .url          = link_ , 
+          .liga_nr      = arch_$liga_nr[i],  
+          .if_all_season= !IF_update,
+          .time_break   = ifelse(IF_update, 1.5, 3) ) 
       ) 
-    gc()
-    if( (i %% 5 == 0) | i == nrow(arch_)){
-      system("free -h")
-      TAB_arch_tmp_ = TAB_arch_tmp %>% 
-        fmutate(across(grep('team_(a|b)', names(.), value = T), function(x) {trimws(gsub('\\([^)]+\\)', '', x))} )) %>%
-        fmutate(info = case_when(
-          grepl('Walkower',  godzina) ~ 'Walkower',
-          grepl('Pokarn.',   godzina) ~ 'Karne',
-          grepl('Podogr.',   godzina) ~ 'Dogrywka',
-          grepl('Anulowane', godzina) ~ 'Anulowane',
-          T ~ '' ),
-          godzina = gsub('(Walkower)|(Pokarn.)|(Podogr.)|(Anulowane)', '', godzina)
-        ) 
-      TAB_arch_     = rbind(TAB_arch, TAB_arch_tmp_) %>% funique() %>%
-        fsubset(!is.na(team_a) & !is.na(team_score_a) & !is.na(team_score_b) & !is.na(data)) %>% 
-        tidy_slice_rows(by_ = c('kraj', 'liga', 'liga_', 'liga_nr', 'data',  'team_a', 'team_b')) %>%
-        funique()
-      arrow::write_parquet(TAB_arch_, 'data/ftb/TAB_historical.parquet') 
-      print('after update save')
-    }
+      if( (i %% 5 == 0) || i == nrow(arch_)){
+        gc()
+        system("free -h") 
+      }
+    } 
   }
-  # save 
-  # if(IF_update){   
-  #   TAB_arch     = rbind(TAB_arch, TAB_arch_tmp) %>% funique() 
-  # }else{
-  #   TAB_arch     = TAB_arch_tmp
-  # } 
-  #  
-  # TAB_arch = fsubset(TAB_arch, !is.na(team_a) & !is.na(team_score_a) & !is.na(team_score_b) & !is.na(data)) %>% 
-  #   tidy_slice_rows(by_ = c('kraj', 'liga', 'liga_', 'liga_nr', 'data',  'team_a', 'team_b')) %>%
-  #   funique()   
-  # arrow::write_parquet(TAB_arch, 'data/ftb/TAB_historical.parquet')   
+  TAB_arch_tmp = TAB_arch_tmp %>% 
+    fmutate(across(grep('team_(a|b)', names(.), value = T), function(x) {trimws(gsub('\\([^)]+\\)', '', x))} )) %>%
+    fmutate(info = case_when(
+      grepl('Walkower',  godzina) ~ 'Walkower',
+      grepl('Pokarn.',   godzina) ~ 'Karne',
+      grepl('Podogr.',   godzina) ~ 'Dogrywka',
+      grepl('Anulowane', godzina) ~ 'Anulowane',
+      T ~ '' ),
+      godzina = gsub('(Walkower)|(Pokarn.)|(Podogr.)|(Anulowane)', '', godzina)
+    )
+  # save
+  if(IF_update){
+    TAB_arch     = rbind(TAB_arch, TAB_arch_tmp) %>% funique()
+  }else{
+    TAB_arch     = TAB_arch_tmp
+  } 
+  TAB_arch = fsubset(TAB_arch, !is.na(team_a) & !is.na(team_score_a) & !is.na(team_score_b) & !is.na(data)) %>%
+    tidy_slice_rows(by_ = c('kraj', 'liga', 'liga_', 'liga_nr', 'data',  'team_a', 'team_b')) %>%
+    funique()
+  arrow::write_parquet(TAB_arch, 'data/ftb/TAB_historical.parquet')
 } else if(ARG_TYPE == 'odds'){
   # 2.5. SCRAP ODDS ##############################################################
   print("####### ODDS #######")
