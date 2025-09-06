@@ -45,7 +45,8 @@ scrap_pilka_ = function(.url, .liga_nr = '1', .if_all_season = F, .time_break = 
       } 
     }
     
-    Sys.sleep( sample(seq_sampler, 1) )  
+    Sys.sleep( sample(seq_sampler, 1) )
+    remote_driver$deleteAllCookies()
     print("start scrap")
     www_       = remote_driver$getPageSource()[[1]] %>% read_html()  
     print("start read html")
@@ -174,6 +175,7 @@ scrap_pilka_ = function(.url, .liga_nr = '1', .if_all_season = F, .time_break = 
     
     # https://www.flashscore.pl/mecz/h6LUUFhp/#/zestawienie-kursow/powyzej-ponizej/koniec-meczu
     Sys.sleep(.time_break)
+    try(remote_driver$navigate("about:blank"), TRUE) 
     tb_
   }, error = function(e){
     cat('|screw up, start again', file = stringr::str_glue('{.log_file}'), append = T)
