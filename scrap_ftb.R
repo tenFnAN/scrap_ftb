@@ -531,6 +531,8 @@ if(ARG_TYPE == 'schedule'){
       ) 
     
     if( (i %% 5 == 0) | i == nrow(arch_)){
+      gc()
+      system("free -h")
       TAB_arch_tmp_ = TAB_arch_tmp %>% 
         fmutate(across(grep('team_(a|b)', names(.), value = T), function(x) {trimws(gsub('\\([^)]+\\)', '', x))} )) %>%
         fmutate(info = case_when(
@@ -548,9 +550,9 @@ if(ARG_TYPE == 'schedule'){
       arrow::write_parquet(TAB_arch_, 'data/ftb/TAB_historical.parquet') 
       print('after update save')
     }
-  }   
+  }
   # save 
-  # if(IF_update){    
+  # if(IF_update){   
   #   TAB_arch     = rbind(TAB_arch, TAB_arch_tmp) %>% funique() 
   # }else{
   #   TAB_arch     = TAB_arch_tmp
