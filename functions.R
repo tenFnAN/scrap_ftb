@@ -58,6 +58,46 @@ scrap_start_session = function(.port = 4444L){
   assign("remote_driver", remote_driver, envir = .GlobalEnv)
   # driver$client
 }
+
+scrap_start_session <- function(.port = 4444L, headless = TRUE) {
+  # Prefy, które realnie obniżają RAM i ryzyko zwiech:
+  ff_prefs <- list(
+    "browser.download.dir"           = "/home/seluser/Downloads",
+    "browser.download.folderList"    = 2,
+    "browser.helperApps.neverAsk.saveToDisk" =
+      "application/octet-stream,application/zip,text/csv,application/pdf,image/png,image/jpeg",
+    "permissions.default.image"      = 2,    
+    "browser.cache.disk.enable"      = FALSE,
+    "browser.cache.memory.enable"    = FALSE,
+    "pdfjs.disabled"                 = TRUE
+  )
+  
+  caps <- list(
+    "moz:firefoxOptions" = list(
+      args  = if (headless) list("--headless") else list(),
+      prefs = ff_prefs
+    ),
+    pageLoadStrategy = "eager"  
+  )
+  
+  remote_driver <- RSelenium::remoteDriver(
+    remoteServerAddr = "localhost",
+    port            = .port,
+    browserName     = "firefox",
+    extraCapabilities = caps
+  )
+  
+  remote_driver$open(silent = TRUE)
+  
+  # Twarde limity w Selenium – zero wiszenia na elementach/stronach:
+  remote_driver$setTimeout(type = "page load",  milliseconds = 60000) # 60s
+  remote_driver$setTimeout(type = "script",     milliseconds = 60000)
+  remote_driver$setTimeout(type = "implicit",   milliseconds = 10000) # findElement
+  
+  assign("remote_driver", remote_driver, envir = .GlobalEnv)
+  invisible(remote_driver)
+}
+
 scrap_navigate = function(.link, .sleep = 1, .driver = remote_driver){
   .driver$navigate(.link)  
   Sys.sleep( .sleep )

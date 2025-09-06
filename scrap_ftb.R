@@ -530,9 +530,8 @@ if(ARG_TYPE == 'schedule'){
         .if_all_season= !IF_update,
         .time_break   = ifelse(IF_update, 1.5, 3) ) 
       ) 
-    
+    gc()
     if( (i %% 5 == 0) | i == nrow(arch_)){
-      gc()
       system("free -h")
       TAB_arch_tmp_ = TAB_arch_tmp %>% 
         fmutate(across(grep('team_(a|b)', names(.), value = T), function(x) {trimws(gsub('\\([^)]+\\)', '', x))} )) %>%
