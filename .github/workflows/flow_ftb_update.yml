@@ -1,4 +1,4 @@
-name: scrap_ftb_update 
+name: scrap_ftb_update_seq 
 on:
   workflow_dispatch:
   schedule: 
