@@ -20,45 +20,6 @@ scrap_start_session = function(.browser = 'firefox', .port = 132L, .hide = F, ..
   # driver$client
 }
 
-scrap_start_session = function(.port = 4444L, ...){ 
-  # .browser ='chrome'
-  # driver <- RSelenium::rsDriver(browser=c("chrome"),  chromever="91.0.4472.101",  port=4545L,  verbose=F)
-  
-  fprof <- RSelenium::makeFirefoxProfile(
-    list(
-      browser.download.dir = "/home/seluser/Downloads"
-    )
-  )
-  driver        <- RSelenium::rsDriver(browser = 'firefox', port = .port, extraCapabilities = fprof, ...)
-  pid           <- driver$server$process$get_pid() # get the PID of the process you launched
-  remote_driver <- driver[["client"]] 
-  assign("pid",           pid,           envir = .GlobalEnv)
-  assign("remote_driver", remote_driver, envir = .GlobalEnv) 
-  # driver$client
-}
-scrap_start_session = function(.port = 4444L){ 
-  # .browser ='chrome'
-  # driver <- RSelenium::rsDriver(browser=c("chrome"),  chromever="91.0.4472.101",  port=4545L,  verbose=F)
-  
-  fprof <- RSelenium::makeFirefoxProfile(
-    list(
-      browser.download.dir = "/home/seluser/Downloads"
-    )
-  )
-
-  remote_driver <- RSelenium::remoteDriver(
-    remoteServerAddr = "localhost",
-    port = .port,
-    browserName = "firefox",
-    extraCapabilities = fprof
-  )
-
-  remote_driver$open(silent = TRUE) 
-   
-  assign("remote_driver", remote_driver, envir = .GlobalEnv)
-  # driver$client
-}
-
 scrap_start_session <- function(.port = 4444L, headless = TRUE) {
   # Prefy, które realnie obniżają RAM i ryzyko zwiech:
   ff_prefs <- list(
