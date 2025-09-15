@@ -309,19 +309,16 @@ scrap_schedule = function(.url, .liga_nr, ...){
   })
 }
 
-scrap_odds = function(.lnk, ...){
+scrap_odds = function(.lnk, .id_match, ...){
   
   tryCatch({       
     # 
-    tb_odds = data.frame('link_kursy' = .lnk, 'odds_u_2_5' = NA, 'odds_u_3_5' = NA, 'odds_u_4_5' = NA)
+    tb_odds = data.frame('link_kursy' = .id_match, 'odds_u_2_5' = NA, 'odds_u_3_5' = NA, 'odds_u_4_5' = NA)
     .url = paste0('https://www.flashscore.pl/mecz/', .lnk, '/#/kursy/powyzej-ponizej/koniec-meczu')
     .url = gsub("szczegoly", "kursy/powyzej-ponizej/koniec-meczu", .lnk)
     # cat('\n start' , file = str_glue('log/log_ftb_odds.txt'), append = T) 
     # cat(paste0('\n', .url) , file = str_glue('log/log_ftb_odds.txt'), append = T) 
-    scrap_navigate( .url )  
-    
-    # click1 = tryCatch(remote_driver$findElement(using = 'xpath', value = xpaths_ ), error = function(e) 'error') 
-    # click1$clickElement()
+    scrap_navigate( .url )   
     
     Sys.sleep( sample(seq_sampler, 1) )
     
@@ -448,7 +445,7 @@ scrap_odds = function(.lnk, ...){
     if(exists('pid')){scrap_kill_session( )} 
     Sys.sleep(1) 
     scrap_start_session()   
-    scrap_odds(.lnk = link_ )
+    scrap_odds(.lnk = link_, .id_match = idm_ )
     
   })
 }
@@ -593,10 +590,11 @@ if(ARG_TYPE == 'schedule'){
   TAB_odds = data.frame()
   for(i in 1:nrow(TAB_sched) ){
     link_ = TAB_sched$link_match[i]
+    idm_ = TAB_sched$link_kursy[i]
     print(link_) ; print(paste0(which(TAB_sched$link_match == link_), '/', nrow(TAB_sched)))
     
     i_try = 1
-    TAB_odds = rbind(TAB_odds, scrap_odds(.lnk = link_) )  
+    TAB_odds = rbind(TAB_odds, scrap_odds(.lnk = link_, .id_match = idm_) )  
     
     Sys.sleep( sample(seq(0.5, 1, 0.2), 1) ) 
   } 
