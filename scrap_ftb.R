@@ -315,10 +315,13 @@ scrap_odds = function(.lnk, ...){
     # 
     tb_odds = data.frame('link_kursy' = .lnk, 'odds_u_2_5' = NA, 'odds_u_3_5' = NA, 'odds_u_4_5' = NA)
     .url = paste0('https://www.flashscore.pl/mecz/', .lnk, '/#/kursy/powyzej-ponizej/koniec-meczu')
-    # .url = gsub("szczegoly", "kursy/powyzej-ponizej/koniec-meczu", .lnk)
+    .url = gsub("szczegoly", "kursy/powyzej-ponizej/koniec-meczu", .lnk)
     # cat('\n start' , file = str_glue('log/log_ftb_odds.txt'), append = T) 
     # cat(paste0('\n', .url) , file = str_glue('log/log_ftb_odds.txt'), append = T) 
     scrap_navigate( .url )  
+    
+    # click1 = tryCatch(remote_driver$findElement(using = 'xpath', value = xpaths_ ), error = function(e) 'error') 
+    # click1$clickElement()
     
     Sys.sleep( sample(seq_sampler, 1) )
     
