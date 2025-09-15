@@ -266,6 +266,7 @@ scrap_schedule = function(.url, .liga_nr, ...){
       ) %>%
         fmutate(month = substring(data, 4,5), year = NA) 
     }
+    tb_[,'link_match'] = www_ %>% html_nodes("a.eventRowLink") %>% html_attr("href")
     
     cat(paste0('|nrow tb_', nrow(tb_)), file = str_glue('log/log_ftb_schedule.txt'), append = T)
     scrap_navigate( stringr::str_glue('https://www.flashscore.pl/mecz/{tb_$link_kursy[[1]]}/') ) 
@@ -313,7 +314,8 @@ scrap_odds = function(.lnk, ...){
   tryCatch({       
     # 
     tb_odds = data.frame('link_kursy' = .lnk, 'odds_u_2_5' = NA, 'odds_u_3_5' = NA, 'odds_u_4_5' = NA)
-    .url = paste0('https://www.flashscore.pl/mecz/', .lnk, '/#/zestawienie-kursow/powyzej-ponizej/koniec-meczu')
+    .url = paste0('https://www.flashscore.pl/mecz/', .lnk, '/#/kursy/powyzej-ponizej/koniec-meczu')
+    # .url = gsub("szczegoly", "kursy/powyzej-ponizej/koniec-meczu", .lnk)
     # cat('\n start' , file = str_glue('log/log_ftb_odds.txt'), append = T) 
     # cat(paste0('\n', .url) , file = str_glue('log/log_ftb_odds.txt'), append = T) 
     scrap_navigate( .url )  
@@ -580,14 +582,15 @@ if(ARG_TYPE == 'schedule'){
       !(kraj %in% c('Hiszpania', 'Włochy') & liga_nr %in% c('4', '5')) & 
         !(kraj %in% c('Algieria', 'Maroko') & liga_nr %in% c('2')) &
         !(kraj %in% c('Burundi', 'San Marino', 'Angola', 'Dominikana', 'Rosja'))
-    ) 
+    ) %>%
+    fsubset(!is.na(link_match))
   #
   scrap_start_session() 
   #
   TAB_odds = data.frame()
   for(i in 1:nrow(TAB_sched) ){
-    link_ = TAB_sched$link_kursy[i]
-    print(link_) ; print(paste0(which(TAB_sched$link_kursy == link_), '/', nrow(TAB_sched)))
+    link_ = TAB_sched$link_match[i]
+    print(link_) ; print(paste0(which(TAB_sched$link_match == link_), '/', nrow(TAB_sched)))
     
     i_try = 1
     TAB_odds = rbind(TAB_odds, scrap_odds(.lnk = link_) )  
