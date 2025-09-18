@@ -320,8 +320,8 @@ scrap_odds = function(.lnk, .id_match, ...){
     # cat(paste0('\n', .url) , file = str_glue('log/log_ftb_odds.txt'), append = T) 
     scrap_navigate( .url )   
     
-    Sys.sleep( sample(seq_sampler, 1) )
-    
+    # Sys.sleep( sample(seq_sampler, 1) )
+    Sys.sleep( 0.3 )
     remote_driver$deleteAllCookies()
     Sys.sleep( 0.3 )
     www_ = remote_driver$getPageSource()[[1]] %>% 
@@ -596,7 +596,7 @@ if(ARG_TYPE == 'schedule'){
     i_try = 1
     TAB_odds = rbind(TAB_odds, scrap_odds(.lnk = link_, .id_match = idm_) )  
     
-    Sys.sleep( sample(seq(0.5, 1, 0.2), 1) ) 
+    # Sys.sleep( sample(seq(0.5, 1, 0.2), 1) ) 
   } 
     #  
   TAB_odds_ = rowbind(
