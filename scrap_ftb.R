@@ -588,7 +588,7 @@ if(ARG_TYPE == 'schedule'){
   scrap_start_session() 
   #
   TAB_odds = data.frame()
-  if(start_i == 1){
+  if(ARG_iter_start == 1){
     iter_start = 1
     iter_end = ceiling(nrow(TAB_sched)/2)
   } else{
