@@ -588,7 +588,14 @@ if(ARG_TYPE == 'schedule'){
   scrap_start_session() 
   #
   TAB_odds = data.frame()
-  for(i in 1:nrow(TAB_sched) ){
+  if(start_i == 1){
+    iter_start = 1
+    iter_end = ceiling(nrow(TAB_sched)/2)
+  } else{
+    iter_start = ceiling(nrow(TAB_sched)/2) + 1
+    iter_end = nrow(TAB_sched)
+  }
+  for(i in iter_start:iter_end ){
     link_ = TAB_sched$link_match[i]
     idm_ = TAB_sched$link_kursy[i]
     print(link_) ; print(paste0(which(TAB_sched$link_match == link_), '/', nrow(TAB_sched)))
