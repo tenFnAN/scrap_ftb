@@ -592,7 +592,7 @@ if(ARG_TYPE == 'schedule'){
     iter_start = 1
     iter_end = ceiling(nrow(TAB_sched)/2)
   } else{
-    iter_start = ceiling(nrow(TAB_sched)/2) + 1
+    iter_start = 1
     iter_end = nrow(TAB_sched)
   }
   for(i in iter_start:iter_end ){
