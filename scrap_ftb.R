@@ -392,6 +392,8 @@ scrap_odds = function(.lnk, .id_match, ...){
       # odsi = odds_kursy %>%
       #   html_elements('[data-testid="wcl-oddsInfo"]') %>%
       #   html_text()
+      print('len kursy')
+      print(length(odds_kursy))
       ods = odds_kursy %>%
         html_elements('[data-testid="wcl-oddsValue"]') %>%
         html_text()
