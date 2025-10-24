@@ -318,6 +318,7 @@ scrap_odds = function(.lnk, .id_match, ...){
     .url = gsub("szczegoly", "kursy/powyzej-ponizej/koniec-meczu", .lnk)
     # cat('\n start' , file = str_glue('log/log_ftb_odds.txt'), append = T) 
     # cat(paste0('\n', .url) , file = str_glue('log/log_ftb_odds.txt'), append = T) 
+    # scrap_start_session()
     scrap_navigate( .url )   
     
     # Sys.sleep( sample(seq_sampler, 1) )
@@ -334,40 +335,68 @@ scrap_odds = function(.lnk, .id_match, ...){
       html_text()
     
     if(length(tab_selected) != 0 && tab_selected != 'Kursy'){
-      xp_ = '/html/body/div[1]/div/div[6]/div/a[2]'
+      xp_ = '/html/body/div[4]/div[1]/div/div[1]/main/div[5]/div[1]/div[5]/div/section/div[1]/div/div[2]/div/button[2]'
       
-      click1       = tryCatch(remote_driver$findElement(using = 'xpath', value = xp_ ), error = function(e) 'error') 
-      click_output = tryCatch(click1$sendKeysToElement(list("R Cran", key = "enter")), error = function(e) NA  ) 
-      #  
-      Sys.sleep( 0.3 )
-      click1       = tryCatch(remote_driver$findElement(using = 'xpath', value = '/html/body/div[1]/div/div[7]/div[1]/div/a[2]/button' ), error = function(e) 'error') 
-      click_output = tryCatch(click1$sendKeysToElement(list("R Cran", key = "enter")), error = function(e) NA  ) 
-      #
-      # webElem = remote_driver$findElement("css selector", "div.detail__detailOver.selected > button:nth-child(1)")  
-      # webElem <-webElem$clickElement()
-      # remote_driver$executeScript("document.querySelector('.detailOver').click();")
+      click_extend <- tryCatch({
+        el <- remote_driver$findElement(using = "xpath", value = "//button[contains(., 'Powyżej/Poniżej')]")
+        el$clickElement()
+        el
+      }, error = function(e) {
+        message("Nie znaleziono przycisku 'Pokaż więcej meczów'")
+        NULL
+      })
+      
+      if(is.null(click_extend)){
+        click1       = tryCatch(remote_driver$findElement(using = 'xpath', value = xp_ ), error = function(e) 'error') 
+        click_output = tryCatch(click1$sendKeysToElement(list("R Cran", key = "enter")), error = function(e) NA  ) 
+        #  
+        Sys.sleep( 0.3 )
+        click1       = tryCatch(remote_driver$findElement(using = 'xpath', value = '/html/body/div[1]/div/div[7]/div[1]/div/a[2]/button' ), error = function(e) 'error') 
+        click_output = tryCatch(click1$sendKeysToElement(list("R Cran", key = "enter")), error = function(e) NA  ) 
+        #
+        # webElem = remote_driver$findElement("css selector", "div.detail__detailOver.selected > button:nth-child(1)")  
+        # webElem <-webElem$clickElement()
+        # remote_driver$executeScript("document.querySelector('.detailOver').click();")
+      }
+       
       www_ = remote_driver$getPageSource()[[1]] %>% 
         read_html()
     }
+    # odds_tabelka = www_ %>%
+    #   html_nodes('.oddsTab__tableWrapper')
     odds_tabelka = www_ %>%  
-      html_nodes('.oddsTab__tableWrapper')
-    
+      html_nodes('.wclOddsContentOverall')
+     
     if( length(odds_tabelka) >= 1){
       print('odds TABLE')
       # naglowki  : RAZEM powyzej ponizej
       # odds_naglowki = www_ %>%  
       #   html_nodes('.ui-table__header')
       
+      # odds_kursy = www_ %>%  
+      #   html_nodes('.ui-table__body')
+      # odds_kursy = www_ %>%  
+      #   html_nodes('.wclOddsRow')
       odds_kursy = www_ %>%  
-        html_nodes('.ui-table__body')
+        html_nodes('.wclOddsContent')
+      
+       
       # linia pierwsza czesc
       # odds_kursy %>%  html_text()
       
       # dane z tabelek : kursy 
-      ods = odds_kursy %>%
-        html_nodes('.ui-table__row') %>%
-        html_text() 
+      # ods = odds_kursy %>%
+      #   html_nodes('.ui-table__row') %>%
+      #   html_text() 
       
+      # odsi = odds_kursy %>%
+      #   html_elements('[data-testid="wcl-oddsInfo"]') %>%
+      #   html_text()
+      ods = odds_kursy %>%
+        html_elements('[data-testid="wcl-oddsValue"]') %>%
+        html_text()
+       
+      # as.character(odds_kursy[1])
       # odds_linia_ = odds_tabelka  %>%     
       #   html_nodes( xpath=".//span[@class='oddsCell__noOddsCell']") %>%
       #   html_text()  
@@ -391,22 +420,36 @@ scrap_odds = function(.lnk, .id_match, ...){
       # }
       for( odds_line in c('2.5','3.5', '4.5')){
         # id_linia = which( odds_linia_[odds_id_poprawne] == odds_line)[1]
-        print(odds_line)
         print(paste0('linia ', odds_line))
-        id_linia = ods[str_detect(ods, paste0('^',odds_line))]
-        id_linia = gsub(paste0('^',odds_line), '', id_linia)
-        # numbers <- str_extract_all(id_linia, "\\d+\\.\\d{1}")[[1]]
+         
+        # id_linia = ods[str_detect(ods, paste0('^',odds_line))]
+        # id_linia = gsub(paste0('^',odds_line), '', id_linia)
+        # # numbers <- str_extract_all(id_linia, "\\d+\\.\\d{1}")[[1]]
+        # odds_ = c()
+        # for( odd_ in id_linia){
+        #   id_dot = gregexpr('\\.', odd_)[[1]][2]
+        #   odd_min = c(
+        #     as.numeric(substring(odd_, 1, id_dot-2)),
+        #     as.numeric(substring(odd_, id_dot-1))
+        #   ) %>%
+        #     min(na.rm = T)
+        #   odds_ = c(odds_, odd_min)
+        # }
+        
+        id_linia = which(ods == odds_line)  
         odds_ = c()
         for( odd_ in id_linia){
+          as.numeric(ods[(odd_+1):(odd_+2)])
+          
           id_dot = gregexpr('\\.', odd_)[[1]][2]
-          odd_min = c(
-            as.numeric(substring(odd_, 1, id_dot-2)),
-            as.numeric(substring(odd_, id_dot-1))
-          ) %>%
+          odd_min = as.numeric(ods[(odd_+1):(odd_+2)]) %>%
             min(na.rm = T)
           odds_ = c(odds_, odd_min)
         } 
-        tb_odds[,paste0('odds_u_',gsub('\\.', '_', odds_line))] = fmedian(odds_)
+        od_med = fmedian(odds_)
+        tb_odds[,paste0('odds_u_',gsub('\\.', '_', odds_line))] = od_med
+        
+        print(paste0('odds ', od_med))
         # if( length(id_linia) >= 1 ){ 
         #   print(paste0('before linia ', odds_line))
         #   print(paste0('len odds ', length(id_linia)))
