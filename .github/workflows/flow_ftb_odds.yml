@@ -1,4 +1,4 @@
-name: scrap_ftb_schedule_odds_seq
+name: scrap_ftb_odds
 
 on:
   workflow_dispatch:
