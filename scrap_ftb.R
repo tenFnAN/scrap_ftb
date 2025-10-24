@@ -395,7 +395,7 @@ scrap_odds = function(.lnk, .id_match, ...){
       ods = odds_kursy %>%
         html_elements('[data-testid="wcl-oddsValue"]') %>%
         html_text()
-       
+      print(ods)
       # as.character(odds_kursy[1])
       # odds_linia_ = odds_tabelka  %>%     
       #   html_nodes( xpath=".//span[@class='oddsCell__noOddsCell']") %>%

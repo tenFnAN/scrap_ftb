@@ -1,0 +1,74 @@
+name: scrap_ftb_schedule_odds_seq
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 23 * * 1,3,5,6,0'  # UTC
+
+permissions:
+  contents: write
+
+concurrency:
+  group: scrap-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  schedule:
+    runs-on: ubuntu-latest
+    services:
+      selenium:
+        image: selenium/standalone-firefox:111.0-20230328
+        ports: ['4444:4444']
+        volumes:
+          - /github/workspace/data/downloads:/home/seluser/Downloads
+        options: --shm-size=2g
+    steps:
+      - uses: actions/checkout@v3
+        with: { fetch-depth: 0 }
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with: { use-public-rspm: true }
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with: { needs: check }
+
+  scrap_ftb_odds1:
+    runs-on: ubuntu-latest
+    needs: schedule
+    services:
+      selenium:
+        image: selenium/standalone-firefox:111.0-20230328
+        ports: ['4444:4444']
+        volumes:
+          - /github/workspace/data/downloads:/home/seluser/Downloads
+        options: --shm-size=2g
+    steps:
+      - uses: actions/checkout@v3
+        with: { fetch-depth: 0 }
+
+      # Dociągnij najnowszy main po jobie schedule (dla pewności)
+      - name: Sync to latest main
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with: { use-public-rspm: true }
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with: { needs: check }
+
+      - name: scrap odds (part 1)
+        run: |
+          Rscript scrap_ftb.R --type odds --start_i 1
+
+      - name: Commit files (after odds1)
+        run: |
+          git config user.name actions-user
+          git config user.email "actions@github.com"
+          git add data/ftb/* log/* || true
+          git commit -m "GH ACTION odds part1 $(date)" || echo "Nothing to commit"
+          git push origin main
+ 
