@@ -14,7 +14,6 @@ ARG_TYPE = as.character(arguments$type)
 ARG_iter_start = arguments$start_i
 ARG_iter_end = arguments$end_i
 
-
 #load libs
 # Rscript scrap_ftb.R --type schedule
 # Rscript scrap_ftb.R --type update
@@ -313,8 +312,7 @@ scrap_odds = function(.lnk, .id_match, ...){
   
   tryCatch({       
     # 
-    tb_odds = data.frame('link_kursy' = .id_match, 'odds_u_2_5' = NA, 'odds_u_3_5' = NA, 'odds_u_4_5' = NA)
-    # .url = paste0('https://www.flashscore.pl/mecz/', .lnk, '/#/kursy/powyzej-ponizej/koniec-meczu')
+    tb_odds = data.frame('link_kursy' = .id_match, 'odds_u_2_5' = NA, 'odds_u_3_5' = NA, 'odds_u_4_5' = NA) 
     .url = gsub('\\?mid', 'kursy/powyzej-ponizej/koniec-meczu/?mid', .lnk)
     # .url = gsub("szczegoly", "kursy/powyzej-ponizej/koniec-meczu", .lnk)
     # cat('\n start' , file = str_glue('log/log_ftb_odds.txt'), append = T) 
@@ -379,11 +377,7 @@ scrap_odds = function(.lnk, .id_match, ...){
       #   html_nodes('.wclOddsRow')
       # odds_kursy = www_ %>%  
       #   html_nodes('.wclOddsContent')
-      
-       
-      # linia pierwsza czesc
-      # odds_kursy %>%  html_text()
-      
+        
       # dane z tabelek : kursy 
       ods = odds_kursy %>%
         html_nodes('.ui-table__row') %>%
@@ -392,7 +386,7 @@ scrap_odds = function(.lnk, .id_match, ...){
       # odsi = odds_kursy %>%
       #   html_elements('[data-testid="wcl-oddsInfo"]') %>%
       #   html_text()
-      print('len kursy')
+      # print('len kursy')
       # print(length(odds_kursy))
       # ods = odds_kursy %>%
       #   html_elements('[data-testid="wcl-oddsValue"]') %>%
@@ -448,7 +442,7 @@ scrap_odds = function(.lnk, .id_match, ...){
         #     min(na.rm = T)
         #   odds_ = c(odds_, odd_min)
         # } 
-        od_med = fmedian(odds_)
+        od_med = round(fmedian(odds_),2)
         tb_odds[,paste0('odds_u_',gsub('\\.', '_', odds_line))] = od_med
         
         print(paste0('odds ', od_med))
@@ -468,20 +462,8 @@ scrap_odds = function(.lnk, .id_match, ...){
       print('no odds')
     }
     # cat('\n end' , file = str_glue('log/log_ftb_odds.txt'), append = T) 
-    Sys.sleep( 0.3 )
-    # if(F){
-    #   odds_kursy = odds_tabelka  %>%
-    #     html_nodes(xpath = '//*[@class="oddsCell__odd  "]') %>%
-    #     html_text()
-    #   
-    #   odds_tabelka  %>%
-    #     html_nodes(xpath = '//*[@class="oddsCell__bookmakerPart"]')
-    #   
-    #   odds_book = odds_kursy %>%
-    #     html_attr('href') %>%
-    #     substr(1, 14) 
-    # }
-    print(nrow(tb_odds))
+    Sys.sleep( 0.3 ) 
+    # print(nrow(tb_odds))
     tb_odds
   }, error = function(e) {
     assign('i_try', i_try+1,envir = globalenv())
@@ -507,8 +489,7 @@ if(ARG_TYPE == 'schedule'){
   scrap_start_session() 
   # 
   TAB_sched = data.frame()
-  for(i in 1:nrow(arch_) ){ # nrow(arch_) link_ = 'https://www.flashscore.pl/pilka-nozna/europa/liga-konfetrencji/mecze'
-  # for(i in 1:5 ){
+  for(i in 1:nrow(arch_) ){
     link_ = arch_$terminarz[i]
     print(link_) ; print(paste0(which(arch_$terminarz == link_), '/', nrow(arch_)))
     
@@ -545,9 +526,11 @@ if(ARG_TYPE == 'schedule'){
     mutate(id_season = row_number()) %>%
     ungroup() %>%
     fsubset(id_season %in% 1:3) %>% # How many recent seasons?
-    mutate(#url = paste0('https://www.flashscore.pl/', url, 'wyniki/'), 
-      id_ = row_number()) %>%
-    join(arch_[,c('wyniki', 'kraj', 'liga')] %>% frename(ligaa = liga) %>% fmutate(wyniki = gsub('\\/wyniki', '', wyniki)), 
+    mutate( id_ = row_number()) %>%
+    join(
+      arch_[,c('wyniki', 'kraj', 'liga')] %>%
+        frename(ligaa = liga) %>%
+        fmutate(wyniki = gsub('\\/wyniki', '', wyniki)), 
          on = c('liga' = 'wyniki'))
   # save 
   if(IF_update){  
@@ -713,10 +696,7 @@ if(F){
   arch_ = read.csv('data/TAB_league_list.csv') %>%
     fmutate(select = fifelse(wyniki %in% df_log, 0, 1)) 
   
-  write.csv(arch_, 'data/TAB_league_list.csv')
-  
- 
- 
+  write.csv(arch_, 'data/TAB_league_list.csv') 
 }
  
  
