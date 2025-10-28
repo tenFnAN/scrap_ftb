@@ -314,13 +314,13 @@ scrap_odds = function(.lnk, .id_match, ...){
   tryCatch({       
     # 
     tb_odds = data.frame('link_kursy' = .id_match, 'odds_u_2_5' = NA, 'odds_u_3_5' = NA, 'odds_u_4_5' = NA)
-    .url = paste0('https://www.flashscore.pl/mecz/', .lnk, '/#/kursy/powyzej-ponizej/koniec-meczu')
-    .url = gsub("szczegoly", "kursy/powyzej-ponizej/koniec-meczu", .lnk)
+    # .url = paste0('https://www.flashscore.pl/mecz/', .lnk, '/#/kursy/powyzej-ponizej/koniec-meczu')
+    .url = gsub('\\?mid', 'kursy/powyzej-ponizej/koniec-meczu/?mid', .lnk)
+    # .url = gsub("szczegoly", "kursy/powyzej-ponizej/koniec-meczu", .lnk)
     # cat('\n start' , file = str_glue('log/log_ftb_odds.txt'), append = T) 
     # cat(paste0('\n', .url) , file = str_glue('log/log_ftb_odds.txt'), append = T) 
     # scrap_start_session()
-    scrap_navigate( .url )   
-    
+    scrap_navigate( .url )    
     # Sys.sleep( sample(seq_sampler, 1) )
     Sys.sleep( 0.3 )
     remote_driver$deleteAllCookies()
@@ -362,10 +362,10 @@ scrap_odds = function(.lnk, .id_match, ...){
       www_ = remote_driver$getPageSource()[[1]] %>% 
         read_html()
     }
-    # odds_tabelka = www_ %>%
-    #   html_nodes('.oddsTab__tableWrapper')
-    odds_tabelka = www_ %>%  
-      html_nodes('.wclOddsContentOverall')
+    odds_tabelka = www_ %>%
+      html_nodes('.oddsTab__tableWrapper')
+    # odds_tabelka = www_ %>%  
+    #   html_nodes('.wclOddsContentOverall')
      
     if( length(odds_tabelka) >= 1){
       print('odds TABLE')
@@ -373,31 +373,31 @@ scrap_odds = function(.lnk, .id_match, ...){
       # odds_naglowki = www_ %>%  
       #   html_nodes('.ui-table__header')
       
-      # odds_kursy = www_ %>%  
-      #   html_nodes('.ui-table__body')
-      # odds_kursy = www_ %>%  
+      odds_kursy = www_ %>%
+        html_nodes('.ui-table__body')
+      # odds_kursy = www_ %>%
       #   html_nodes('.wclOddsRow')
-      odds_kursy = www_ %>%  
-        html_nodes('.wclOddsContent')
+      # odds_kursy = www_ %>%  
+      #   html_nodes('.wclOddsContent')
       
        
       # linia pierwsza czesc
       # odds_kursy %>%  html_text()
       
       # dane z tabelek : kursy 
-      # ods = odds_kursy %>%
-      #   html_nodes('.ui-table__row') %>%
-      #   html_text() 
+      ods = odds_kursy %>%
+        html_nodes('.ui-table__row') %>%
+        html_text()
       
       # odsi = odds_kursy %>%
       #   html_elements('[data-testid="wcl-oddsInfo"]') %>%
       #   html_text()
       print('len kursy')
-      print(length(odds_kursy))
-      ods = odds_kursy %>%
-        html_elements('[data-testid="wcl-oddsValue"]') %>%
-        html_text()
-      print(ods)
+      # print(length(odds_kursy))
+      # ods = odds_kursy %>%
+      #   html_elements('[data-testid="wcl-oddsValue"]') %>%
+      #   html_text()
+      # print(ods)
       # as.character(odds_kursy[1])
       # odds_linia_ = odds_tabelka  %>%     
       #   html_nodes( xpath=".//span[@class='oddsCell__noOddsCell']") %>%
@@ -424,30 +424,30 @@ scrap_odds = function(.lnk, .id_match, ...){
         # id_linia = which( odds_linia_[odds_id_poprawne] == odds_line)[1]
         print(paste0('linia ', odds_line))
          
-        # id_linia = ods[str_detect(ods, paste0('^',odds_line))]
-        # id_linia = gsub(paste0('^',odds_line), '', id_linia)
-        # # numbers <- str_extract_all(id_linia, "\\d+\\.\\d{1}")[[1]]
-        # odds_ = c()
-        # for( odd_ in id_linia){
-        #   id_dot = gregexpr('\\.', odd_)[[1]][2]
-        #   odd_min = c(
-        #     as.numeric(substring(odd_, 1, id_dot-2)),
-        #     as.numeric(substring(odd_, id_dot-1))
-        #   ) %>%
-        #     min(na.rm = T)
-        #   odds_ = c(odds_, odd_min)
-        # }
-        
-        id_linia = which(ods == odds_line)  
+        id_linia = ods[str_detect(ods, paste0('^',odds_line))]
+        id_linia = gsub(paste0('^',odds_line), '', id_linia)
+        # numbers <- str_extract_all(id_linia, "\\d+\\.\\d{1}")[[1]]
         odds_ = c()
         for( odd_ in id_linia){
-          as.numeric(ods[(odd_+1):(odd_+2)])
-          
           id_dot = gregexpr('\\.', odd_)[[1]][2]
-          odd_min = as.numeric(ods[(odd_+1):(odd_+2)]) %>%
+          odd_min = c(
+            as.numeric(substring(odd_, 1, id_dot-2)),
+            as.numeric(substring(odd_, id_dot-1))
+          ) %>%
             min(na.rm = T)
           odds_ = c(odds_, odd_min)
-        } 
+        }
+        
+        # id_linia = which(ods == odds_line)  
+        # odds_ = c()
+        # for( odd_ in id_linia){
+        #   as.numeric(ods[(odd_+1):(odd_+2)])
+        #   
+        #   id_dot = gregexpr('\\.', odd_)[[1]][2]
+        #   odd_min = as.numeric(ods[(odd_+1):(odd_+2)]) %>%
+        #     min(na.rm = T)
+        #   odds_ = c(odds_, odd_min)
+        # } 
         od_med = fmedian(odds_)
         tb_odds[,paste0('odds_u_',gsub('\\.', '_', odds_line))] = od_med
         
