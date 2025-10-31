@@ -322,7 +322,7 @@ scrap_odds = function(.lnk, .id_match, ...){
     # Sys.sleep( sample(seq_sampler, 1) )
     Sys.sleep( 0.3 )
     remote_driver$deleteAllCookies()
-    Sys.sleep( 0.3 )
+    Sys.sleep( 0.1 )
     www_ = remote_driver$getPageSource()[[1]] %>% 
       read_html()
     Sys.sleep( sample(seq_sampler, 1) )
@@ -344,18 +344,18 @@ scrap_odds = function(.lnk, .id_match, ...){
         NULL
       })
       
-      if(is.null(click_extend)){
-        click1       = tryCatch(remote_driver$findElement(using = 'xpath', value = xp_ ), error = function(e) 'error') 
-        click_output = tryCatch(click1$sendKeysToElement(list("R Cran", key = "enter")), error = function(e) NA  ) 
-        #  
-        Sys.sleep( 0.3 )
-        click1       = tryCatch(remote_driver$findElement(using = 'xpath', value = '/html/body/div[1]/div/div[7]/div[1]/div/a[2]/button' ), error = function(e) 'error') 
-        click_output = tryCatch(click1$sendKeysToElement(list("R Cran", key = "enter")), error = function(e) NA  ) 
-        #
-        # webElem = remote_driver$findElement("css selector", "div.detail__detailOver.selected > button:nth-child(1)")  
-        # webElem <-webElem$clickElement()
-        # remote_driver$executeScript("document.querySelector('.detailOver').click();")
-      }
+      # if(is.null(click_extend)){
+      #   click1       = tryCatch(remote_driver$findElement(using = 'xpath', value = xp_ ), error = function(e) 'error') 
+      #   click_output = tryCatch(click1$sendKeysToElement(list("R Cran", key = "enter")), error = function(e) NA  ) 
+      #   #  
+      #   Sys.sleep( 0.3 )
+      #   click1       = tryCatch(remote_driver$findElement(using = 'xpath', value = '/html/body/div[1]/div/div[7]/div[1]/div/a[2]/button' ), error = function(e) 'error') 
+      #   click_output = tryCatch(click1$sendKeysToElement(list("R Cran", key = "enter")), error = function(e) NA  ) 
+      #   #
+      #   # webElem = remote_driver$findElement("css selector", "div.detail__detailOver.selected > button:nth-child(1)")  
+      #   # webElem <-webElem$clickElement()
+      #   # remote_driver$executeScript("document.querySelector('.detailOver').click();")
+      # }
        
       www_ = remote_driver$getPageSource()[[1]] %>% 
         read_html()
@@ -462,7 +462,7 @@ scrap_odds = function(.lnk, .id_match, ...){
       print('no odds')
     }
     # cat('\n end' , file = str_glue('log/log_ftb_odds.txt'), append = T) 
-    Sys.sleep( 0.3 ) 
+    Sys.sleep( 0.2 ) 
     # print(nrow(tb_odds))
     tb_odds
   }, error = function(e) {
