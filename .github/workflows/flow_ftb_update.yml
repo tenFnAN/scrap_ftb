@@ -39,7 +39,7 @@ jobs:
       # ==== RUN 1: iteracje 1..150 ====
       - name: scrap (1/3) 1..150
         run: |
-          Rscript scrap_ftb.R --type update --start_i 1 --end_i 150
+          Rscript scrap_ftb.R --type update --start_i 1 --end_i 145
 
       - name: Check disk and memory (after 1/3)
         run: |
@@ -63,7 +63,7 @@ jobs:
       # ==== RUN 2: iteracje 151..300 ====
       - name: scrap (2/3) 151..300
         run: |
-          Rscript scrap_ftb.R --type update --start_i 151 --end_i 300
+          Rscript scrap_ftb.R --type update --start_i 146 --end_i 300
 
       - name: Check disk and memory (after 2/3)
         run: |
