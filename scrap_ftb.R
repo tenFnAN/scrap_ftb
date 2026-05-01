@@ -697,6 +697,15 @@ if(F){
     fmutate(select = fifelse(wyniki %in% df_log, 0, 1)) 
   
   write.csv(arch_, 'data/TAB_league_list.csv') 
+  
+  # Update links --------------------------------------------------
+  fsubset(TAB_archiwum, grepl('tercera', liga))
+  TAB_archiwum = fmutate(TAB_archiwum, liga = fifelse(grepl('tercera', liga), gsub('division', 'rfef', liga), liga))
+  # arrow::write_parquet(TAB_archiwum, 'data/TAB_archiwum.parquet')
 }
  
- 
+
+
+
+
+
