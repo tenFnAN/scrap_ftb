@@ -230,7 +230,7 @@ scrap_schedule = function(.url, .liga_nr, ...){
       html_nodes('.event__titleBox') %>%
       html_text() %>%
       .[1]
-    if( length(www_ %>% html_nodes('.event__time')) == 0 ){
+    if( length(www_ %>% html_nodes('.event__round')) == 0 ){
       cat('|nrow tb_0', file = str_glue('log/log_ftb_schedule.txt'), append = T)
       # return(invisible(NA))
       return()
@@ -248,23 +248,23 @@ scrap_schedule = function(.url, .liga_nr, ...){
     
     tb_ = tryCatch(
       bind_cols(
-        www_ %>% html_nodes('.event__time') %>% polite::html_attrs_dfr() %>% fselect(data = .text) %>% tidyr::separate(col = 'data', sep = ' ', into = c('data', 'godzina')),
-        www_ %>% html_nodes('.event__participant--home') %>%polite::html_attrs_dfr() %>% fselect(team_a = .text),
-        www_ %>% html_nodes('.event__participant--away') %>%polite::html_attrs_dfr() %>% fselect(team_b = .text), 
+        www_ %>% html_nodes('.event__stageTime') %>% polite::html_attrs_dfr() %>% fselect(data = .text) %>% tidyr::separate(col = 'data', sep = ' ', into = c('data', 'godzina')),
+        www_ %>% html_nodes('.event__homeParticipant') %>%polite::html_attrs_dfr() %>% fselect(team_a = .text),
+        www_ %>% html_nodes('.event__awayParticipant') %>%polite::html_attrs_dfr() %>% fselect(team_b = .text), 
         www_ %>% html_nodes('.event__match') %>%polite::html_attrs_dfr() %>% fselect(link_kursy = id) %>% fmutate(link_kursy = substring(link_kursy, 5))
       ) %>%
         fmutate(month = substring(data, 4,5), year = NA), 
       error = function(e){ NA } )
     
-    if(nrow(tb_) == 0 || is.na(tb_)){
-      tb_ = bind_cols(
-        www_ %>% html_nodes('.event__time') %>% polite::html_attrs_dfr() %>% fselect(data = .text) %>% tidyr::separate(col = 'data', sep = ' ', into = c('data', 'godzina')),
-        www_ %>% html_nodes('.event__homeParticipant') %>%polite::html_attrs_dfr() %>% fselect(team_a = .text),
-        www_ %>% html_nodes('.event__awayParticipant') %>%polite::html_attrs_dfr() %>% fselect(team_b = .text), 
-        www_ %>% html_nodes('.event__match') %>%polite::html_attrs_dfr() %>% fselect(link_kursy = id) %>% fmutate(link_kursy = substring(link_kursy, 5))
-      ) %>%
-        fmutate(month = substring(data, 4,5), year = NA) 
-    }
+    # if( nrow(tb_) == 0 ){
+    #   tb_ = bind_cols(
+    #     www_ %>% html_nodes('.event__stageTime') %>% polite::html_attrs_dfr() %>% fselect(data = .text) %>% tidyr::separate(col = 'data', sep = ' ', into = c('data', 'godzina')),
+    #     www_ %>% html_nodes('.event__homeParticipant') %>%polite::html_attrs_dfr() %>% fselect(team_a = .text),
+    #     www_ %>% html_nodes('.event__awayParticipant') %>%polite::html_attrs_dfr() %>% fselect(team_b = .text), 
+    #     www_ %>% html_nodes('.event__match') %>%polite::html_attrs_dfr() %>% fselect(link_kursy = id) %>% fmutate(link_kursy = substring(link_kursy, 5))
+    #   ) %>%
+    #     fmutate(month = substring(data, 4,5), year = NA) 
+    # }
     tb_[,'link_match'] = www_ %>% html_nodes("a.eventRowLink") %>% html_attr("href")
     
     cat(paste0('|nrow tb_', nrow(tb_)), file = str_glue('log/log_ftb_schedule.txt'), append = T)
