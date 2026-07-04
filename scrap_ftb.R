@@ -69,9 +69,9 @@ scrap_pilka_ = function(.url, .liga_nr = '1', .if_all_season = F, .time_break = 
     season_    = html_nodes(www_, '.heading__info') %>% html_text() 
     # www_ %>% html_nodes('.event__round') %>% polite::html_attrs_dfr() %>% fselect(faza = .text)
     # www_ %>% html_element("h1")
-    # length(www_ %>% html_nodes('.event__time'))
+    # length(www_ %>% html_nodes('.event__stageTime'))
     
-    n_match = length(www_ %>% html_nodes('.event__time'))
+    n_match = length(www_ %>% html_nodes('.event__stageTime'))
     cat(paste0('|nrow tb_', n_match), file = stringr::str_glue('{.log_file}'), append = T)
     if( n_match == 0 ){ return() }
     
@@ -83,7 +83,7 @@ scrap_pilka_ = function(.url, .liga_nr = '1', .if_all_season = F, .time_break = 
     score_half_a = if(nrow(score_half_a) != n_match ){data.frame('team_score_half_a' = '')}else{score_half_a}
     score_half_b = if(nrow(score_half_b) != n_match ){data.frame('team_score_half_b' = '')}else{score_half_b}
     tb_ = bind_cols(
-      www_ %>% html_nodes('.event__time') %>% polite::html_attrs_dfr() %>%fselect(data = .text) %>% tidyr::separate(col = 'data', sep = ' ', into = c('data', 'godzina')),
+      www_ %>% html_nodes('.event__stageTime') %>% polite::html_attrs_dfr() %>%fselect(data = .text) %>% tidyr::separate(col = 'data', sep = ' ', into = c('data', 'godzina')),
       www_ %>% html_nodes('.event__homeParticipant') %>% polite::html_attrs_dfr() %>% fselect(team_a = .text),
       www_ %>% html_nodes('.event__awayParticipant') %>% polite::html_attrs_dfr() %>% fselect(team_b = .text),
       www_ %>% html_nodes('.event__score--home') %>% polite::html_attrs_dfr() %>%  fselect(team_score_a = .text),
