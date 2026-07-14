@@ -561,7 +561,7 @@ if(ARG_TYPE == 'schedule'){
       link_ = arch_$url[i] 
       print(link_) ; print(paste0(which(arch_$url == link_), '/', nrow(arch_)))
       # 
-      TAB_arch_tmp = rowbind(
+      TAB_arch_tmp = bind_rows(
         TAB_arch_tmp,
         scrap_pilka_(
           .url          = link_ , 
