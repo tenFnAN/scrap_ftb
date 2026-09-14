@@ -18,4 +18,5 @@ Imports:
     polite,
     rvest,
     RSelenium
-    
+Remotes:
+    dmi3kno/polite
