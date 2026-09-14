@@ -35,7 +35,7 @@ jobs:
       - name: Check R repositories
         run: |
           Rscript -e 'print(getOption("repos"))'
-          Rscript -e 'print(available.packages()[c("polite", "sessioninfo"), c("Package", "Version")])'
+          Rscript -e 'ap <- available.packages(); print(dim(ap)); print(ap[grep("polite|sessioninfo", rownames(ap), ignore.case=TRUE), c("Package", "Version"), drop=FALSE])'
     
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
