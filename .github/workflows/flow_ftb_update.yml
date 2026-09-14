@@ -32,9 +32,10 @@ jobs:
         with:
           use-public-rspm: true
 
-      - name: Check R repositories
+      - name: Debug R package repositories
         run: |
           Rscript -e 'print(getOption("repos"))'
+          Rscript -e 'print(.libPaths())'
           Rscript -e 'ap <- available.packages(); print(dim(ap)); print(ap[grep("polite|sessioninfo", rownames(ap), ignore.case=TRUE), c("Package", "Version"), drop=FALSE])'
     
       - uses: r-lib/actions/setup-r-dependencies@v2
