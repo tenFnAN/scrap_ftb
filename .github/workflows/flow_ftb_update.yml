@@ -32,11 +32,16 @@ jobs:
         with:
           use-public-rspm: true
 
-      - name: Debug R package repositories
+      - name: Debug R dependencies
         run: |
-          Rscript -e 'print(getOption("repos"))'
-          Rscript -e 'print(.libPaths())'
-          Rscript -e 'ap <- available.packages(); print(dim(ap)); print(ap[grep("polite|sessioninfo", rownames(ap), ignore.case=TRUE), c("Package", "Version"), drop=FALSE])'
+          Rscript -e 'cat("R version:\n"); print(R.version.string)'
+          Rscript -e 'cat("\nRepositories:\n"); print(getOption("repos"))'
+          Rscript -e 'cat("\nAvailable packages:\n"); ap <- available.packages(); print(dim(ap)); print(ap[grep("polite|sessioninfo", rownames(ap), ignore.case=TRUE), c("Package", "Version"), drop=FALSE])'
+          Rscript -e 'cat("\nDESCRIPTION:\n"); print(read.dcf("DESCRIPTION")[, c("Package", "Imports"), drop=FALSE])'
+          echo "--- sessioninfo references ---"
+          grep -Rni "sessioninfo" . --exclude-dir=.git || true
+          echo "--- polite references ---"
+          grep -Rni "polite" . --exclude-dir=.git || true
     
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
