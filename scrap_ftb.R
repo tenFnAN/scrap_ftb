@@ -202,7 +202,7 @@ scrap_pilka_ = function(.url, .liga_nr = '1', .if_all_season = F, .time_break = 
   )
 }
 
-scrap_schedule = function(.url, .liga_nr, ...){
+scrap_schedule = function(.url, .liga_nr, .attempt = 1L, .max_tries = 3L, ...){
   tryCatch({
     #print('inside func')
     cat(paste0('\n', date_, '|', .url) , file = str_glue('log/log_ftb_schedule.txt'), append = T) 
@@ -213,7 +213,6 @@ scrap_schedule = function(.url, .liga_nr, ...){
     www_ = remote_driver$getPageSource()[[1]] %>%
       read_html() 
     cat('|read.html', file = str_glue('log/log_ftb_schedule.txt'), append = T)
-    Sys.sleep( sample(seq_sampler, 1)  )
     # www_ = read_html(.url)  
     kraj_      = html_nodes(www_, '.breadcrumb__link') %>% html_text() %>% .[2]
     liga_      = html_nodes(www_, '.heading__name') %>% html_text() %>%
@@ -268,43 +267,113 @@ scrap_schedule = function(.url, .liga_nr, ...){
     tb_[,'link_match'] = www_ %>% html_nodes("a.eventRowLink") %>% html_attr("href")
     
     cat(paste0('|nrow tb_', nrow(tb_)), file = str_glue('log/log_ftb_schedule.txt'), append = T)
-    scrap_navigate( stringr::str_glue('https://www.flashscore.pl/mecz/{tb_$link_kursy[[1]]}/') ) 
-    tb_[1,'year'] = remote_driver$getPageSource()[[1]] %>%
-      read_html() %>% html_node('.duelParticipant__startTime') %>% html_text() %>% str_sub(7, 10) %>% as.numeric()
-    #print('after year')
-    if(is.na(tb_[1,'year'])){
-      tb_[1,'year'] = lubridate::year(Sys.time())
+    ##
+    tz <- "Europe/Warsaw"
+    now <- as.POSIXct(Sys.time(), tz = tz)
+    end <- now + 14 * 24 * 60 * 60
+    
+    day <- as.integer(substr(tb_$data, 1, 2))
+    month <- as.integer(substr(tb_$data, 4, 5))
+    clock <- stringr::str_extract(tb_$godzina, "\\b\\d{1,2}:\\d{2}\\b")
+    year_now <- as.integer(format(now, "%Y", tz = tz))
+    
+    make_kickoff <- function(year) {
+      as.POSIXct(
+        sprintf("%04d-%02d-%02d %s", year, month, day, clock),
+        format = "%Y-%m-%d %H:%M",
+        tz = tz
+      )
     }
-    #  
-    tb_ = tb_ %>%
-      fmutate(
-        year  = zoo::na.locf0(year),
-        month = as.numeric(substring(data, 4,5)),
-        day   = as.numeric(substring(data, 1,2))
-      ) %>% 
-      fmutate(
-        godzina  = gsub('TWK', '', godzina),
-        new_year = as.integer(month > dplyr::lead(month)),
-        year2    = ifelse(dplyr::lag(new_year)==1, year+1, year), 
-        year2    = ifelse(is.na(year2), year, year2) %>% cummax(),
-        data     = as.Date(paste(year2, month, day, sep = '-') )
-      ) %>%
-      fselect(-year, -year2, -new_year, -month, -day) %>% 
-      fsubset(!grepl('Przeł.', godzina)) %>%
-      bind_cols(tb_base)
+    
+    kickoff_this_year <- make_kickoff(year_now)
+    kickoff_next_year <- make_kickoff(year_now + 1L)
+    
+    in_this_year <- !is.na(kickoff_this_year) &
+      kickoff_this_year >= now &
+      kickoff_this_year <= end
+    
+    in_next_year <- !is.na(kickoff_next_year) &
+      kickoff_next_year >= now &
+      kickoff_next_year <= end
+    
+    keep <- in_this_year | in_next_year
+    
+    if (!any(keep)) {
+      return(NULL)
+    }
+    
+    kickoff <- kickoff_this_year
+    use_next_year <- !in_this_year & in_next_year
+    kickoff[use_next_year] <- kickoff_next_year[use_next_year]
+    
+    tb_ <- tb_[keep, , drop = FALSE]
+    tb_$data <- as.Date(kickoff[keep], tz = tz)
+    
+    ##
+    # scrap_navigate( stringr::str_glue('https://www.flashscore.pl/mecz/{tb_$link_kursy[[1]]}/') ) 
+    # tb_[1,'year'] = remote_driver$getPageSource()[[1]] %>%
+    #   read_html() %>% html_node('.duelParticipant__startTime') %>% html_text() %>% str_sub(7, 10) %>% as.numeric()
+    # #print('after year')
+    # if(is.na(tb_[1,'year'])){
+    #   tb_[1,'year'] = lubridate::year(Sys.time())
+    # }
+    # #  
+    # tb_ = tb_ %>%
+    #   fmutate(
+    #     year  = zoo::na.locf0(year),
+    #     month = as.numeric(substring(data, 4,5)),
+    #     day   = as.numeric(substring(data, 1,2))
+    #   ) %>% 
+    #   fmutate(
+    #     godzina  = gsub('TWK', '', godzina),
+    #     new_year = as.integer(month > dplyr::lead(month)),
+    #     year2    = ifelse(dplyr::lag(new_year)==1, year+1, year), 
+    #     year2    = ifelse(is.na(year2), year, year2) %>% cummax(),
+    #     data     = as.Date(paste(year2, month, day, sep = '-') )
+    #   ) %>%
+    #   fselect(-year, -year2, -new_year, -month, -day) %>% 
+    #   fsubset(!grepl('Przeł.', godzina)) %>%
+    #   bind_cols(tb_base)
     # print('after bind_cols') 
+    tb_ <- tb_ %>%
+      fmutate(godzina = gsub("TWK", "", godzina)) %>%
+      fsubset(!grepl("Przeł\\.", godzina)) %>%
+      bind_cols(tb_base)
+    
     tb_
   }, error = function(e) {
-    cat('|fuck up, start again', file = str_glue('log/log_ftb_schedule.txt'), append = T)
-    if(exists('pid')){scrap_kill_session( )} 
-    Sys.sleep(1) 
-    if(.Platform$OS.type == 'windows'){
-      # scrap_start_session(.hide = SELE_HIDE, check = F)
-      scrap_start_session(.hide = SELE_HIDE)
-    }else{
-      scrap_start_session()
-    } 
-    scrap_schedule(.url = link_ , .liga_nr = arch_$liga_nr[i])
+    cat(
+      paste0(
+        '|error attempt=', .attempt, '/', .max_tries,
+        '|url=', .url,
+        '|message=', conditionMessage(e)
+      ),
+      file = str_glue('log/log_ftb_schedule.txt'),
+      append = TRUE
+    )
+
+    if (.attempt >= .max_tries) {
+      cat('|giving up', file = str_glue('log/log_ftb_schedule.txt'), append = TRUE)
+      return(NULL)
+    }
+
+    # Close the current browser session before opening another one.
+    # The active scrap_start_session() definition does not set a `pid`,
+    # so scrap_kill_session() cannot reliably be used here.
+    if (exists('remote_driver', envir = .GlobalEnv)) {
+      try(remote_driver$close(), silent = TRUE)
+      rm(remote_driver, envir = .GlobalEnv)
+    }
+
+    Sys.sleep(min(2 ^ (.attempt - 1L), 8))
+    scrap_start_session()
+
+    scrap_schedule(
+      .url = .url,
+      .liga_nr = .liga_nr,
+      .attempt = .attempt + 1L,
+      .max_tries = .max_tries
+    )
   })
 }
 
