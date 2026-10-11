@@ -322,7 +322,7 @@ scrap_schedule = function(.url, .liga_nr, .attempt = 1L, .max_tries = 3L, ...){
     #   fmutate(
     #     year  = zoo::na.locf0(year),
     #     month = as.numeric(substring(data, 4,5)),
-    #     day   = as.numeric(substring(data, 1,2))
+    #     day   = as.numeric(substring(data, 1,2)
     #   ) %>% 
     #   fmutate(
     #     godzina  = gsub('TWK', '', godzina),
@@ -570,7 +570,9 @@ if(ARG_TYPE == 'schedule'){
   #  
   TAB_schedule_raw = arrow::read_parquet('data/ftb/TAB_terminarz.parquet') %>% tidy_slice_rows('link_kursy') %>% fmutate(update=Sys.time())
   # 
-   
+  print(names(TAB_schedule_raw))
+  print(names(TAB_sched))
+  
   funique(rowbind(
     TAB_schedule_raw,
     funique(fsubset(TAB_sched, !is.na(team_a) )) %>% fmutate(update=Sys.time(), odds_u_2_5=NA,odds_u_3_5=NA,odds_u_4_5=NA) 
