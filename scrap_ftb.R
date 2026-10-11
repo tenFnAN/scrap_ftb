@@ -336,6 +336,7 @@ scrap_schedule = function(.url, .liga_nr, .attempt = 1L, .max_tries = 3L, ...){
     #   bind_cols(tb_base)
     # print('after bind_cols') 
     tb_ <- tb_ %>%
+      fselect(-month, -year) %>%
       fmutate(godzina = gsub("TWK", "", godzina)) %>%
       fsubset(!grepl("Przeł\\.", godzina)) %>%
       bind_cols(tb_base)
