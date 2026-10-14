@@ -28,7 +28,7 @@ date_       = as.Date(Sys.time())
 seq_sampler = seq(0.5, 1.5, 0.2)
 SELE_HIDE   = if(Sys.info()['sysname'] == 'Windows'){F}else{T}
 # scrap_start_session(.hide = T, check = F)
-scrap_pilka_ = function(.url, .liga_nr = '1', .if_all_season = F, .time_break = 1.5, ...){
+scrap_pilka_ = function(.url, .liga_nr = '1', .if_all_season = F, .time_break = 1.5, .attempt = 1L, .max_tries = 3L, ...){
   # match.call zwraca nazwe wywolywanej funkcji
   # browser() 
   
@@ -51,7 +51,7 @@ scrap_pilka_ = function(.url, .liga_nr = '1', .if_all_season = F, .time_break = 
       } 
     }
     
-    Sys.sleep( sample(seq_sampler, 1) )
+    Sys.sleep( sample(seq(0.1, 0.6, 0.2), 1) )
     remote_driver$deleteAllCookies()
     print("start scrap")
     www_       = remote_driver$getPageSource()[[1]] %>% read_html()  
@@ -75,7 +75,7 @@ scrap_pilka_ = function(.url, .liga_nr = '1', .if_all_season = F, .time_break = 
     cat(paste0('|nrow tb_', n_match), file = stringr::str_glue('{.log_file}'), append = T)
     if( n_match == 0 ){ return() }
     
-    Sys.sleep( sample(seq_sampler, 1) ) 
+    # Sys.sleep( sample(seq_sampler, 1) ) 
     # 15.03.23 -> usuneli wynik z pierwszej polowy meczu
     # score_half_a = www_ %>% html_nodes('.event__participant--home') %>% polite::html_attrs_dfr() %>% fsubset(grepl('1$', class)) %>% fselect(team_score_half_a = .text)
     score_half_a = www_ %>% html_nodes('.event__participant--home') %>% polite::html_attrs_dfr() %>% fselect(team_score_half_a = .text)
@@ -100,7 +100,7 @@ scrap_pilka_ = function(.url, .liga_nr = '1', .if_all_season = F, .time_break = 
     print('start loop')
     id_event_time = gregexpr('Zobacz szczegóły meczu', www_)[[1]]
     id_info_      = gregexpr('event__title--name', www_)[[1]]
-    for(row in 1:nrow(tb_)){ 
+    for(row in 1:nrow(tb_)){
       # print(row)
       # row = 5 
       i_ = ifelse(row==length(id_event_time),
@@ -130,22 +130,31 @@ scrap_pilka_ = function(.url, .liga_nr = '1', .if_all_season = F, .time_break = 
     print('end loop')
     #print(nrow(tb_))                            
     # 
-    tryCatch(scrap_navigate( stringr::str_glue('https://www.flashscore.pl/mecz/{tb_$link_kursy[[1]]}/') ), 
-             error = function(e){
-               if(exists('pid')){scrap_kill_session( )}  
-               if(.Platform$OS.type == 'windows'){
-                 # scrap_start_session(.hide = SELE_HIDE, check = F)
-                 scrap_start_session(.hide = SELE_HIDE )
-               }else{
-                 # remote_driver$close()
-                 # remote_driver$closeall()
-                 print('start ses again')
-                 print(stringr::str_glue('https://www.flashscore.pl/mecz/{tb_$link_kursy[[1]]}/'))
-                 scrap_start_session()
-                 print('started ses again')
-               } 
-               scrap_navigate( stringr::str_glue('https://www.flashscore.pl/mecz/{tb_$link_kursy[[1]]}/') )
-             })
+    match_url <- stringr::str_glue(
+      'https://www.flashscore.pl/mecz/{tb_$link_kursy[[1]]}/'
+    )
+    tryCatch(
+      scrap_navigate(match_url),
+      error = function(e) {
+        cat(
+          paste0('|match-page navigation error|', conditionMessage(e)),
+          file = .log_file,
+          append = TRUE
+        )
+
+        # Use the active scrap_start_session() signature from functions.R.
+        if (exists('remote_driver', envir = .GlobalEnv)) {
+          try(remote_driver$close(), silent = TRUE)
+          rm(remote_driver, envir = .GlobalEnv)
+        }
+        if (exists('pid', envir = .GlobalEnv)) {
+          rm(pid, envir = .GlobalEnv)
+        }
+
+        scrap_start_session()
+        scrap_navigate(match_url)
+      }
+    )
     # scrap_navigate( stringr::str_glue('https://www.flashscore.pl/mecz/{tb_$link_kursy[[1]]}/') )
     year_1strow = remote_driver$getPageSource()[[1]] %>%
       read_html() %>% html_node('.duelParticipant__startTime') %>% html_text() %>% str_sub(7, 10) %>% as.numeric()
@@ -184,22 +193,42 @@ scrap_pilka_ = function(.url, .liga_nr = '1', .if_all_season = F, .time_break = 
     try(remote_driver$navigate("about:blank"), TRUE) 
     tb_
   }, error = function(e){
-    cat('|screw up, start again', file = stringr::str_glue('{.log_file}'), append = T)
-    if(exists('pid')){scrap_kill_session( )} 
-    Sys.sleep(1) 
-    if(.Platform$OS.type == 'windows'){
-      # scrap_start_session(.hide = SELE_HIDE, check = F)
-      scrap_start_session(.hide = SELE_HIDE)
-    }else{
-      scrap_start_session()
-    } 
+    cat(
+      paste0(
+        '|error attempt=', .attempt, '/', .max_tries,
+        '|url=', .url,
+        '|message=', conditionMessage(e)
+      ),
+      file = .log_file,
+      append = TRUE
+    )
+
+    if (.attempt >= .max_tries) {
+      cat('|giving up', file = .log_file, append = TRUE)
+      return(NULL)
+    }
+
+    # Zamknij bieżącą sesję, jeśli istnieje, przed uruchomieniem kolejnej.
+    if (exists('remote_driver', envir = .GlobalEnv)) {
+      try(remote_driver$close(), silent = TRUE)
+      rm(remote_driver, envir = .GlobalEnv)
+    }
+    if (exists('pid', envir = .GlobalEnv)) {
+      rm(pid, envir = .GlobalEnv)
+    }
+
+    Sys.sleep(min(2 ^ (.attempt - 1L), 8))
+    scrap_start_session()
+
     scrap_pilka_(
-      .url          = link_ , 
-      .liga_nr      = arch_$liga_nr[i],  
-      .if_all_season= !IF_update,
-      .time_break   = ifelse(IF_update, 1.5, 3) )
-  } 
-  )
+      .url = .url,
+      .liga_nr = .liga_nr,
+      .if_all_season = .if_all_season,
+      .time_break = .time_break,
+      .attempt = .attempt + 1L,
+      .max_tries = .max_tries
+    )
+  })
 }
 
 scrap_schedule = function(.url, .liga_nr, .attempt = 1L, .max_tries = 3L, ...){
