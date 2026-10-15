@@ -130,62 +130,94 @@ scrap_pilka_ = function(.url, .liga_nr = '1', .if_all_season = F, .time_break = 
     print('end loop')
     #print(nrow(tb_))                            
     # 
-    match_url <- stringr::str_glue(
-      'https://www.flashscore.pl/mecz/{tb_$link_kursy[[1]]}/'
-    )
-    tryCatch(
-      scrap_navigate(match_url),
-      error = function(e) {
-        cat(
-          paste0('|match-page navigation error|', conditionMessage(e)),
-          file = .log_file,
-          append = TRUE
+    if (.if_all_season) {
+      # Historical/full-season mode: obtain the reference year from a match page.
+      match_url <- stringr::str_glue(
+        'https://www.flashscore.pl/mecz/{tb_$link_kursy[[1]]}/'
+      )
+      tryCatch(
+        scrap_navigate(match_url),
+        error = function(e) {
+          cat(
+            paste0('|match-page navigation error|', conditionMessage(e)),
+            file = .log_file,
+            append = TRUE
+          )
+
+          if (exists('remote_driver', envir = .GlobalEnv)) {
+            try(remote_driver$close(), silent = TRUE)
+            rm(remote_driver, envir = .GlobalEnv)
+          }
+          if (exists('pid', envir = .GlobalEnv)) {
+            rm(pid, envir = .GlobalEnv)
+          }
+
+          scrap_start_session()
+          scrap_navigate(match_url)
+        }
+      )
+      year_1strow <- remote_driver$getPageSource()[[1]] %>%
+        read_html() %>%
+        html_node('.duelParticipant__startTime') %>%
+        html_text() %>%
+        str_sub(7, 10) %>%
+        as.numeric()
+      tb_[1, 'year'] <- year_1strow
+
+      tb_ <- tb_ %>%
+        fmutate(
+          year = zoo::na.locf0(year),
+          kolejka = zoo::na.locf0(kolejka),
+          month = as.numeric(substring(data, 4, 5)),
+          day = as.numeric(substring(data, 1, 2))
+        ) %>%
+        fmutate(
+          new_year = as.integer(month > lag(month)),
+          new_year_ = new_year > 0
+        ) %>%
+        tidy_rownumber('new_year_', col_name = 'year_dif') %>%
+        fmutate(
+          year_dif = as.integer(year_dif),
+          year2 = ifelse(new_year == 1, year - year_dif, year),
+          year2 = ifelse(is.na(year2), year, year2) %>% cummin(),
+          data = as.Date(paste(year2, month, day, sep = '-'))
         )
+      cat(
+        paste0('|change_year', sum(tb_$new_year, na.rm = TRUE)),
+        file = .log_file,
+        append = TRUE
+      )
+      tb_ <- tb_ %>%
+        fselect(-year, -year2, -new_year, -new_year_, -year_dif, -month, -day)
+    } else {
+      # Update mode: these pages contain completed matches; infer the year
+      # from today's date without opening an individual match page.
+      today <- Sys.Date()
+      current_year <- as.integer(format(today, '%Y'))
+      month <- as.integer(substr(tb_$data, 4, 5))
+      day <- as.integer(substr(tb_$data, 1, 2))
+      dates_this_year <- lubridate::make_date(current_year, month, day)
+      inferred_dates <- as.Date(ifelse(dates_this_year > today,
+                                       lubridate::make_date(current_year - 1L, month, day),
+                                       dates_this_year),
+                                origin = '1970-01-01')
+      keep <- !is.na(inferred_dates) &
+        inferred_dates >= today - 7L & inferred_dates <= today
 
-        # Use the active scrap_start_session() signature from functions.R.
-        if (exists('remote_driver', envir = .GlobalEnv)) {
-          try(remote_driver$close(), silent = TRUE)
-          rm(remote_driver, envir = .GlobalEnv)
-        }
-        if (exists('pid', envir = .GlobalEnv)) {
-          rm(pid, envir = .GlobalEnv)
-        }
-
-        scrap_start_session()
-        scrap_navigate(match_url)
+      tb_ <- tb_[keep, , drop = FALSE]
+      tb_$data <- inferred_dates[keep]
+      tb_ <- tb_ %>% fselect(-month, -year)
+      if (nrow(tb_) == 0L) {
+        return(NULL)
       }
-    )
-    # scrap_navigate( stringr::str_glue('https://www.flashscore.pl/mecz/{tb_$link_kursy[[1]]}/') )
-    year_1strow = remote_driver$getPageSource()[[1]] %>%
-      read_html() %>% html_node('.duelParticipant__startTime') %>% html_text() %>% str_sub(7, 10) %>% as.numeric()
-    tb_[1,'year'] = year_1strow
-    
-    tb_ = tb_ %>%
+    }
+
+    tb_ <- tb_ %>%
       fmutate(
-        year     = zoo::na.locf0(year),
-        kolejka  = zoo::na.locf0(kolejka),
-        month    = as.numeric(substring(data, 4,5)),
-        day      = as.numeric(substring(data, 1,2))
-      ) %>%
-      fmutate(
-        new_year = as.integer(month > lag(month)),
-        new_year_= new_year > 0) %>% 
-      tidy_rownumber('new_year_', col_name = 'year_dif') %>% 
-      fmutate(
-        year_dif = as.integer(year_dif), 
-        year2    = ifelse(new_year==1, year-year_dif, year),
-        year2    = ifelse(is.na(year2), year, year2) %>% cummin(),
-        data     = as.Date(paste(year2, month, day, sep = '-') )
-      ) 
-    cat(paste0('|change_year', sum(tb_$new_year, na.rm = T)), file = stringr::str_glue('{.log_file}'), append = T)
-    
-    tb_ = tb_ %>%
-      fselect(-year, -year2, -new_year, -new_year_, -year_dif ,-month, -day) %>%
-      fmutate(
-        kraj    = kraj_,
-        liga    = liga_,
+        kraj = kraj_,
+        liga = liga_,
         liga_nr = .liga_nr,
-        liga_   = paste0(liga_, '|', season_)
+        liga_ = paste0(liga_, '|', season_)
       )
     
     # https://www.flashscore.pl/mecz/h6LUUFhp/#/zestawienie-kursow/powyzej-ponizej/koniec-meczu
