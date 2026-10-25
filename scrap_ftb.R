@@ -285,11 +285,19 @@ scrap_schedule = function(.url, .liga_nr, .attempt = 1L, .max_tries = 3L, ...){
       gsub(x = ., pattern = ' ', replacement = '-') %>%
       tolower()
     season_    = html_nodes(www_, '.heading__info') %>% html_text() 
-    faza_  = html_nodes(www_, '.container__livetable') %>%
-      html_nodes('.container__fsbody') %>%
-      html_nodes('.event__titleBox') %>%
-      html_text() %>%
-      .[1]
+    # faza_  = html_nodes(www_, '.container__livetable') %>%
+    #   html_nodes('.headerLeague__title') %>%
+    #   html_nodes('.event__titleBox') %>%
+    #   html_text() %>%
+    #   .[1]
+    
+    faza_  = html_nodes(www_, '.headerLeague__title') %>%
+      html_text()
+    
+    if( any(grepl('Play|Baraż|Spadek|Awans', faza_)) ){
+      faza_ = 'play_off'
+    }
+    
     if( length(www_ %>% html_nodes('.event__round')) == 0 ){
       cat('|nrow tb_0', file = str_glue('log/log_ftb_schedule.txt'), append = T)
       # return(invisible(NA))
